@@ -69,7 +69,8 @@ exports.handler = async (event) => {
         amount: montant,
         payment_phone_number: telephone,
         provider,
-        customer: { name: `${client.prenom} ${client.nom}`, phone: telephone },
+        customer: { name: `${client.prenom} ${client.nom}`, phone: telephone }, 
+        customer_external_id: telephone,
         metadata: { order_id: orderId },
       }),
     });
