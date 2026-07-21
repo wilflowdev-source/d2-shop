@@ -95,6 +95,29 @@ nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.97);backdrop-
 .bdot{width:6px;height:6px;border-radius:3px;background:rgba(255,255,255,.4);cursor:pointer;transition:all .3s}
 .bdot.active{width:22px;background:var(--rose)}
 
+/* ANNONCE URGENTE */
+#annonceBar{position:relative;padding:11px 44px 11px 20px;text-align:center;font-size:12.5px;letter-spacing:.5px;color:#fff;font-family:'Josefin Sans',sans-serif}
+#annonceBar .ab-close{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(255,255,255,.8);cursor:pointer;font-size:15px}
+#annonceBar .ab-close:hover{color:#fff}
+
+/* PROMOTIONS */
+#promoStrip{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;max-width:1200px;margin:0 auto;padding:0 24px 60px}
+.promo-card{background:linear-gradient(135deg,var(--rose-pale),#fff);border:1px solid rgba(232,160,180,.25);border-radius:14px;padding:26px 24px;text-align:center}
+.promo-card .pc-t{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--noir);margin-bottom:8px}
+.promo-card .pc-d{font-family:'Cormorant Garamond',serif;font-size:15px;color:#777;font-style:italic}
+
+/* PUBS PARTENAIRES */
+#pubsList{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;max-width:1200px;margin:0 auto;padding:0 24px 70px}
+.pub-card{display:block;text-decoration:none;background:#fff;border:1px solid rgba(0,0,0,.07);border-radius:12px;padding:22px;text-align:center;transition:transform .2s,box-shadow .2s}
+.pub-card:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(0,0,0,.08)}
+.pub-card .pub-n{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:var(--noir);margin-bottom:6px}
+.pub-card .pub-t{font-size:12.5px;color:#888}
+
+/* THÈMES ÉVÉNEMENT */
+.theme-deco{position:fixed;inset:0;pointer-events:none;z-index:9998;overflow:hidden}
+.theme-deco span{position:absolute;top:-40px;animation:themeFall linear infinite;opacity:.8}
+@keyframes themeFall{to{transform:translateY(110vh) rotate(360deg)}}
+
 /* SECTION */
 .sh{text-align:center;padding:60px 20px 34px}
 .se{font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--rose-dark);margin-bottom:10px}
@@ -224,6 +247,15 @@ footer p{font-size:13px;line-height:1.8;max-width:275px}
 .cmd-date{font-size:10px;color:rgba(255,255,255,.25);margin-top:8px}
 .btn-livre{margin-top:12px;background:rgba(76,175,80,.14);border:1px solid rgba(76,175,80,.28);color:#81c784;padding:8px 16px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;border-radius:4px;font-family:'Josefin Sans',sans-serif}
 .btn-livre:hover{background:rgba(76,175,80,.28)}
+
+.cnt-form{max-width:480px}
+.cnt-item{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:14px 16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.cnt-item .ci-t{color:#fff;font-size:13.5px;font-weight:600}
+.cnt-item .ci-d{color:rgba(255,255,255,.5);font-size:12px;margin-top:3px}
+.cnt-item .ci-act{display:flex;gap:8px;flex-shrink:0}
+.ci-btn{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.7);width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:12px}
+.ci-btn:hover{background:rgba(255,255,255,.12);color:#fff}
+.ci-btn.danger:hover{background:rgba(239,68,68,.2);color:#f87171}
 .guide{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:36px;background:rgba(232,160,180,.05);border:1px solid rgba(232,160,180,.12);border-radius:12px;padding:22px}
 .gs{text-align:center}
 .gsn{width:32px;height:32px;border-radius:50%;background:var(--rose-dark);color:#fff;font-family:'Playfair Display',serif;font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 9px}
@@ -341,6 +373,9 @@ section{scroll-margin-top:66px}
     </div>
   </nav>
 
+  <!-- ANNONCE URGENTE -->
+  <div id="annonceBar" style="display:none"></div>
+
   <!-- HERO -->
   <section>
     <div id="hero">
@@ -357,38 +392,8 @@ section{scroll-margin-top:66px}
   <!-- BANNIÈRES -->
   <section id="banniere-section">
     <div id="banniere">
-      <div class="bs active" style="background:linear-gradient(135deg,#1a1a1a,#2d1a22)">
-        <div class="bov"></div>
-        <div class="bc">
-          <div class="bl">✦ Nouveauté</div>
-          <div class="bt">Collection Été 2025</div>
-          <div class="bsb">Légèreté, élégance et couleurs vibrantes</div>
-          <a href="#cat-section" class="btn-p">Voir la collection</a>
-        </div>
-      </div>
-      <div class="bs" style="background:linear-gradient(135deg,#1a0f0f,#2d1822)">
-        <div class="bov"></div>
-        <div class="bc">
-          <div class="bl">✦ Tendance</div>
-          <div class="bt">Accessoires Premium</div>
-          <div class="bsb">Sacs, bijoux et plus encore</div>
-          <a href="#cat-section" class="btn-p">Explorer</a>
-        </div>
-      </div>
-      <div class="bs" style="background:linear-gradient(135deg,#0f1a15,#1a2d20)">
-        <div class="bov"></div>
-        <div class="bc">
-          <div class="bl">✦ Offre Spéciale</div>
-          <div class="bt">Promos Exclusives</div>
-          <div class="bsb">Jusqu'à -30% sur une sélection</div>
-          <a href="#cat-section" class="btn-p">Profiter</a>
-        </div>
-      </div>
-      <div class="bdots">
-        <div class="bdot active" onclick="goSlide(0)"></div>
-        <div class="bdot" onclick="goSlide(1)"></div>
-        <div class="bdot" onclick="goSlide(2)"></div>
-      </div>
+      <div id="bannerSlides"><div class="bs active" style="background:linear-gradient(135deg,#1a1a1a,#2d1a22)"><div class="bov"></div></div></div>
+      <div class="bdots" id="bannerDots"></div>
     </div>
   </section>
 
@@ -409,6 +414,11 @@ section{scroll-margin-top:66px}
       </div>
       <div class="pg" id="pg"><div class="em">⟳ Chargement de la collection...</div></div>
     </div>
+  </section>
+
+  <!-- PROMOTIONS -->
+  <section id="promo-section" style="display:none">
+    <div id="promoStrip"></div>
   </section>
 
   <!-- AVIS -->
@@ -434,6 +444,16 @@ section{scroll-margin-top:66px}
       <div class="fg"><label>Commentaire</label><textarea id="avisT" placeholder="Partagez votre expérience avec D2 Shop..."></textarea></div>
       <button class="btn-p" onclick="submitAvis()" style="width:100%;text-align:center">Publier mon avis</button>
     </div>
+  </section>
+
+  <!-- PUBS PARTENAIRES -->
+  <section id="pubs-section" style="display:none">
+    <div class="sh">
+      <div class="se">✦ Nos partenaires</div>
+      <h2 class="sti">Ils nous font confiance</h2>
+      <div class="sli"></div>
+    </div>
+    <div id="pubsList"></div>
   </section>
 
   <!-- FOOTER -->
@@ -536,6 +556,8 @@ section{scroll-margin-top:66px}
   <div class="atabs">
     <button class="atab active" id="tabProd" onclick="switchAdminTab('produits')">📦 Produits</button>
     <button class="atab" id="tabCmd" onclick="switchAdminTab('commandes')">🧾 Commandes <span class="atab-badge" id="cmdBadge" style="display:none">0</span></button>
+    <button class="atab" id="tabContenu" onclick="switchAdminTab('contenu')">🎨 Contenu du site</button>
+    <button class="atab" id="tabStats" onclick="switchAdminTab('stats')">📊 Statistiques</button>
   </div>
   <div class="abo" id="paneProduits">
     <!-- Guide -->
@@ -614,6 +636,74 @@ section{scroll-margin-top:66px}
 
     <div class="ast" style="margin-top:44px">✦ Commandes livrées</div>
     <div id="cmdListLivre"><div style="color:rgba(255,255,255,.25);font-size:13px;padding:10px 0">Chargement...</div></div>
+  </div>
+
+  <!-- PANNEAU CONTENU DU SITE -->
+  <div class="abo" id="paneContenu" style="display:none">
+
+    <div class="ast">✦ Bannières (haut de page)</div>
+    <div class="cnt-form">
+      <div class="fg"><label>Label (petit texte au-dessus)</label><input type="text" id="bnLabel" placeholder="Ex: Nouveauté"></div>
+      <div class="fg"><label>Titre</label><input type="text" id="bnTitre" placeholder="Ex: Collection Été 2026"></div>
+      <div class="fg"><label>Sous-titre</label><input type="text" id="bnSousTitre" placeholder="Ex: Légèreté, élégance et couleurs vibrantes"></div>
+      <div class="fg"><label>Texte du bouton</label><input type="text" id="bnTexteBouton" placeholder="Ex: Voir la collection" value="Découvrir"></div>
+      <div class="fg"><label>Lien du bouton</label><input type="text" id="bnLien" placeholder="#cat-section" value="#cat-section"></div>
+      <button class="asub" onclick="ajouterBanniere()">✦ Ajouter cette bannière</button>
+    </div>
+    <div id="bannieresAdminList" style="margin-top:18px"></div>
+
+    <div class="ast" style="margin-top:44px">✦ Promotions</div>
+    <div class="cnt-form">
+      <div class="fg"><label>Titre de la promo</label><input type="text" id="prTitre" placeholder="Ex: -20% sur les sacs"></div>
+      <div class="fg"><label>Description</label><input type="text" id="prDescription" placeholder="Ex: Jusqu'au 31 juillet"></div>
+      <button class="asub" onclick="ajouterPromo()">✦ Ajouter cette promotion</button>
+    </div>
+    <div id="promosAdminList" style="margin-top:18px"></div>
+
+    <div class="ast" style="margin-top:44px">✦ Pubs partenaires</div>
+    <div class="cnt-form">
+      <div class="fg"><label>Nom du partenaire</label><input type="text" id="pbNom" placeholder="Ex: Salon de coiffure Élégance"></div>
+      <div class="fg"><label>Texte court</label><input type="text" id="pbTexte" placeholder="Ex: -15% pour les clientes D2 Shop"></div>
+      <div class="fg"><label>Lien (site, WhatsApp, Instagram...)</label><input type="text" id="pbLien" placeholder="https://..."></div>
+      <button class="asub" onclick="ajouterPub()">✦ Ajouter ce partenaire</button>
+    </div>
+    <div id="pubsAdminList" style="margin-top:18px"></div>
+
+    <div class="ast" style="margin-top:44px">✦ Annonce urgente (bandeau en haut du site)</div>
+    <div class="cnt-form">
+      <div class="fg"><label>Texte de l'annonce</label><input type="text" id="anTexte" placeholder="Ex: Livraison gratuite ce week-end !"></div>
+      <div class="fg"><label>Couleur</label>
+        <select id="anCouleur" style="width:100%;border:1px solid rgba(255,255,255,.15);border-radius:4px;padding:11px 14px;background:rgba(255,255,255,.04);color:#fff;font-family:'Josefin Sans',sans-serif;font-size:13px">
+          <option value="#c4607e">Rose D2 Shop</option>
+          <option value="#e53935">Rouge (urgent)</option>
+          <option value="#43a047">Vert (bonne nouvelle)</option>
+          <option value="#333333">Noir (neutre)</option>
+        </select>
+      </div>
+      <button class="asub" onclick="publierAnnonce()">✦ Publier l'annonce</button>
+      <button class="btn-livre" style="width:100%;margin-top:10px;background:rgba(239,68,68,.14);border-color:rgba(239,68,68,.28);color:#f87171" onclick="retirerAnnonce()">✕ Retirer l'annonce actuelle</button>
+    </div>
+
+    <div class="ast" style="margin-top:44px">✦ Thème d'événement (habillage visuel du site)</div>
+    <div class="cnt-form">
+      <div class="fg"><label>Thème actif</label>
+        <select id="evTheme" style="width:100%;border:1px solid rgba(255,255,255,.15);border-radius:4px;padding:11px 14px;background:rgba(255,255,255,.04);color:#fff;font-family:'Josefin Sans',sans-serif;font-size:13px">
+          <option value="aucun">Aucun</option>
+          <option value="noel">🎄 Noël</option>
+          <option value="valentin">💕 Saint-Valentin</option>
+        </select>
+      </div>
+      <button class="asub" onclick="appliquerThemeAdmin()">✦ Appliquer ce thème</button>
+    </div>
+  </div>
+
+  <!-- PANNEAU STATISTIQUES -->
+  <div class="abo" id="paneStats" style="display:none">
+    <div class="ast">✦ Articles les plus rentables</div>
+    <div id="statsMeilleuresVentes"><div style="color:rgba(255,255,255,.25);font-size:13px;padding:10px 0">Pas encore de commandes payées.</div></div>
+
+    <div class="ast" style="margin-top:44px">✦ Commandes non finalisées</div>
+    <div id="statsNonFinalisees"><div style="color:rgba(255,255,255,.25);font-size:13px;padding:10px 0">Aucune.</div></div>
   </div>
 </div>
 
@@ -696,6 +786,10 @@ if ('serviceWorker' in navigator) {
 // =====================================================
 let prods = {};
 let cmds = {};
+let promos = {};
+let pubs = {};
+let annonce = null;
+let evenement = null;
 let curFilter = 'tous';
 let selStars = 0;
 let newNotifs = 0;
@@ -712,7 +806,6 @@ window.addEventListener('load', () => {
     setTimeout(() => {
       intro.style.display = 'none';
       document.getElementById('site').classList.add('visible');
-      startBanner();
       setTimeout(() => document.getElementById('admTrig').style.opacity = '0.15', 4000);
     }, 800);
   }, 3800);
@@ -749,21 +842,98 @@ window.addEventListener('load', () => {
     document.getElementById('cmdListAttente').innerHTML = `<div style="color:#f87171;font-size:13px;padding:10px 0">${msg}</div>`;
     document.getElementById('cmdListLivre').innerHTML = '';
   });
+
+  // Firebase : écoute en temps réel le contenu du site (bannières, promos, pubs, annonce, événement)
+  db.ref('contenu/bannieres').on('value', snap => {
+    bannieres = snap.val() || {};
+    renderBannieres();
+    renderAdminBannieres();
+  });
+  db.ref('contenu/promotions').on('value', snap => {
+    promos = snap.val() || {};
+    renderPromoStrip();
+    renderAdminPromos();
+  });
+  db.ref('contenu/pubs').on('value', snap => {
+    pubs = snap.val() || {};
+    renderPubs();
+    renderAdminPubs();
+  });
+  db.ref('contenu/annonce').on('value', snap => {
+    annonce = snap.val() || null;
+    renderAnnonce();
+    renderAdminAnnonce();
+  });
+  db.ref('contenu/evenement').on('value', snap => {
+    evenement = snap.val() || null;
+    appliquerTheme();
+    renderAdminEvenement();
+  });
 });
 
 // =====================================================
-// BANNIÈRES AUTO
+// BANNIÈRES (dynamiques, gérées depuis l'admin)
 // =====================================================
 let cSlide = 0;
-function startBanner() {
-  setInterval(() => goSlide((cSlide + 1) % 3), 4500);
+let bannerTimer = null;
+let bannieres = {};
+
+const DEGRADES_BANNIERE = [
+  'linear-gradient(135deg,#1a1a1a,#2d1a22)',
+  'linear-gradient(135deg,#1a0f0f,#2d1822)',
+  'linear-gradient(135deg,#0f1a15,#1a2d20)',
+  'linear-gradient(135deg,#1a150f,#2d2418)',
+  'linear-gradient(135deg,#0f1420,#182236)',
+];
+
+function renderBannieres() {
+  const items = Object.entries(bannieres)
+    .filter(([, b]) => b.actif !== false)
+    .sort((a, b) => (a[1].ordre || 0) - (b[1].ordre || 0));
+
+  const slidesEl = document.getElementById('bannerSlides');
+  const dotsEl = document.getElementById('bannerDots');
+
+  if (!items.length) {
+    // Repli si l'admin n'a encore rien configuré
+    slidesEl.innerHTML = `<div class="bs active" style="background:${DEGRADES_BANNIERE[0]}"><div class="bov"></div>
+      <div class="bc"><div class="bl">✦ Bienvenue</div><div class="bt">D2 Shop</div>
+      <div class="bsb">Mode & Style à Brazzaville</div>
+      <a href="#cat-section" class="btn-p">Voir la collection</a></div></div>`;
+    dotsEl.innerHTML = '';
+    if (bannerTimer) clearInterval(bannerTimer);
+    return;
+  }
+
+  slidesEl.innerHTML = items.map(([id, b], i) => `
+    <div class="bs ${i === 0 ? 'active' : ''}" style="background:${b.degrade || DEGRADES_BANNIERE[i % DEGRADES_BANNIERE.length]}">
+      <div class="bov"></div>
+      <div class="bc">
+        <div class="bl">✦ ${b.label || ''}</div>
+        <div class="bt">${b.titre || ''}</div>
+        <div class="bsb">${b.sousTitre || ''}</div>
+        <a href="${b.lien || '#cat-section'}" class="btn-p">${b.texteBouton || 'Découvrir'}</a>
+      </div>
+    </div>`).join('');
+
+  dotsEl.innerHTML = items.map((_, i) => `<div class="bdot ${i === 0 ? 'active' : ''}" onclick="goSlide(${i})"></div>`).join('');
+
+  cSlide = 0;
+  if (bannerTimer) clearInterval(bannerTimer);
+  if (items.length > 1) {
+    bannerTimer = setInterval(() => goSlide((cSlide + 1) % items.length), 4500);
+  }
 }
+
 function goSlide(n) {
-  document.querySelectorAll('.bs')[cSlide].classList.remove('active');
-  document.querySelectorAll('.bdot')[cSlide].classList.remove('active');
+  const slides = document.querySelectorAll('.bs');
+  const dots = document.querySelectorAll('.bdot');
+  if (!slides.length) return;
+  slides[cSlide].classList.remove('active');
+  if (dots[cSlide]) dots[cSlide].classList.remove('active');
   cSlide = n;
-  document.querySelectorAll('.bs')[n].classList.add('active');
-  document.querySelectorAll('.bdot')[n].classList.add('active');
+  slides[n].classList.add('active');
+  if (dots[n]) dots[n].classList.add('active');
 }
 
 // =====================================================
@@ -1344,8 +1514,16 @@ function delProd(id, nom) {
 function switchAdminTab(tab) {
   document.getElementById('paneProduits').style.display = tab === 'produits' ? 'block' : 'none';
   document.getElementById('paneCommandes').style.display = tab === 'commandes' ? 'block' : 'none';
+  document.getElementById('paneContenu').style.display = tab === 'contenu' ? 'block' : 'none';
+  document.getElementById('paneStats').style.display = tab === 'stats' ? 'block' : 'none';
   document.getElementById('tabProd').classList.toggle('active', tab === 'produits');
   document.getElementById('tabCmd').classList.toggle('active', tab === 'commandes');
+  document.getElementById('tabContenu').classList.toggle('active', tab === 'contenu');
+  document.getElementById('tabStats').classList.toggle('active', tab === 'stats');
+  if (tab === 'stats') {
+    renderMeilleuresVentes();
+    renderCommandesNonFinalisees();
+  }
 }
 
 // =====================================================
@@ -1413,6 +1591,262 @@ function marquerLivre(id) {
   db.ref(`commandes/${id}/statut`).set('livré')
     .then(() => showToast('✓ Commande marquée comme livrée', 'success'))
     .catch(() => showToast('Erreur mise à jour commande', 'error'));
+}
+
+// =====================================================
+// CONTENU DU SITE — AFFICHAGE PUBLIC
+// =====================================================
+function renderAnnonce() {
+  const bar = document.getElementById('annonceBar');
+  if (annonce && annonce.texte) {
+    bar.style.background = annonce.couleur || '#c4607e';
+    bar.innerHTML = `${annonce.texte}<button class="ab-close" onclick="document.getElementById('annonceBar').style.display='none'">✕</button>`;
+    bar.style.display = 'block';
+  } else {
+    bar.style.display = 'none';
+  }
+}
+
+function renderPromoStrip() {
+  const items = Object.values(promos).filter(p => p.actif !== false);
+  const section = document.getElementById('promo-section');
+  if (!items.length) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  document.getElementById('promoStrip').innerHTML = items.map(p => `
+    <div class="promo-card">
+      <div class="pc-t">${p.titre || ''}</div>
+      <div class="pc-d">${p.description || ''}</div>
+    </div>`).join('');
+}
+
+function renderPubs() {
+  const items = Object.values(pubs).filter(p => p.actif !== false);
+  const section = document.getElementById('pubs-section');
+  if (!items.length) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  document.getElementById('pubsList').innerHTML = items.map(p => {
+    const tag = p.lien ? 'a' : 'div';
+    const hrefAttr = p.lien ? `href="${p.lien}" target="_blank" rel="noopener"` : '';
+    return `<${tag} class="pub-card" ${hrefAttr}>
+      <div class="pub-n">${p.nom || ''}</div>
+      <div class="pub-t">${p.texte || ''}</div>
+    </${tag}>`;
+  }).join('');
+}
+
+function appliquerTheme() {
+  const old = document.getElementById('themeDeco');
+  if (old) old.remove();
+  if (!evenement || !evenement.theme || evenement.theme === 'aucun') return;
+  const deco = document.createElement('div');
+  deco.id = 'themeDeco';
+  deco.className = 'theme-deco';
+  const emoji = evenement.theme === 'noel' ? '❄️' : '💕';
+  let html = '';
+  for (let i = 0; i < 22; i++) {
+    const left = Math.random() * 100;
+    const delay = Math.random() * 8;
+    const duration = 8 + Math.random() * 6;
+    const size = 12 + Math.random() * 14;
+    html += `<span style="left:${left}%;font-size:${size}px;animation-delay:${delay}s;animation-duration:${duration}s">${emoji}</span>`;
+  }
+  deco.innerHTML = html;
+  document.body.appendChild(deco);
+}
+
+// =====================================================
+// ADMIN — CONTENU : BANNIÈRES
+// =====================================================
+function renderAdminBannieres() {
+  const el = document.getElementById('bannieresAdminList');
+  const items = Object.entries(bannieres).sort((a, b) => (a[1].ordre || 0) - (b[1].ordre || 0));
+  el.innerHTML = items.length ? items.map(([id, b]) => `
+    <div class="cnt-item">
+      <div>
+        <div class="ci-t">${b.titre || '(sans titre)'}${b.actif === false ? ' — masquée' : ''}</div>
+        <div class="ci-d">${b.label || ''} ${b.sousTitre ? '· ' + b.sousTitre : ''}</div>
+      </div>
+      <div class="ci-act">
+        <button class="ci-btn" onclick="toggleBanniereActif('${id}')" title="Afficher/Masquer">${b.actif === false ? '👁' : '🙈'}</button>
+        <button class="ci-btn danger" onclick="supprimerBanniere('${id}','${(b.titre || '').replace(/'/g, "\\'")}')" title="Supprimer">✕</button>
+      </div>
+    </div>`).join('') : '<div style="color:rgba(255,255,255,.25);font-size:13px;padding:10px 0">Aucune bannière — une bannière de bienvenue par défaut s\'affiche.</div>';
+}
+
+function ajouterBanniere() {
+  const titre = document.getElementById('bnTitre').value.trim();
+  if (!titre) { showToast('Le titre est obligatoire', 'error'); return; }
+  const label = document.getElementById('bnLabel').value.trim();
+  const sousTitre = document.getElementById('bnSousTitre').value.trim();
+  const texteBouton = document.getElementById('bnTexteBouton').value.trim() || 'Découvrir';
+  const lien = document.getElementById('bnLien').value.trim() || '#cat-section';
+  const ordre = Object.keys(bannieres).length;
+  db.ref('contenu/bannieres').push({ titre, label, sousTitre, texteBouton, lien, actif: true, ordre })
+    .then(() => {
+      showToast('✓ Bannière ajoutée', 'success');
+      ['bnLabel', 'bnTitre', 'bnSousTitre', 'bnLien'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('bnTexteBouton').value = 'Découvrir';
+    })
+    .catch(() => showToast('Erreur ajout bannière', 'error'));
+}
+
+function toggleBanniereActif(id) {
+  const actuel = bannieres[id] && bannieres[id].actif !== false;
+  db.ref(`contenu/bannieres/${id}/actif`).set(!actuel);
+}
+
+function supprimerBanniere(id, titre) {
+  if (!confirm(`Supprimer la bannière "${titre}" ?`)) return;
+  db.ref(`contenu/bannieres/${id}`).remove()
+    .then(() => showToast('Bannière supprimée'))
+    .catch(() => showToast('Erreur suppression', 'error'));
+}
+
+// =====================================================
+// ADMIN — CONTENU : PROMOTIONS
+// =====================================================
+function renderAdminPromos() {
+  const el = document.getElementById('promosAdminList');
+  const items = Object.entries(promos);
+  el.innerHTML = items.length ? items.map(([id, p]) => `
+    <div class="cnt-item">
+      <div>
+        <div class="ci-t">${p.titre || ''}</div>
+        <div class="ci-d">${p.description || ''}</div>
+      </div>
+      <div class="ci-act">
+        <button class="ci-btn danger" onclick="supprimerPromo('${id}','${(p.titre || '').replace(/'/g, "\\'")}')" title="Supprimer">✕</button>
+      </div>
+    </div>`).join('') : '<div style="color:rgba(255,255,255,.25);font-size:13px;padding:10px 0">Aucune promotion active.</div>';
+}
+
+function ajouterPromo() {
+  const titre = document.getElementById('prTitre').value.trim();
+  if (!titre) { showToast('Le titre est obligatoire', 'error'); return; }
+  const description = document.getElementById('prDescription').value.trim();
+  db.ref('contenu/promotions').push({ titre, description, actif: true })
+    .then(() => {
+      showToast('✓ Promotion ajoutée', 'success');
+      document.getElementById('prTitre').value = '';
+      document.getElementById('prDescription').value = '';
+    })
+    .catch(() => showToast('Erreur ajout promotion', 'error'));
+}
+
+function supprimerPromo(id, titre) {
+  if (!confirm(`Supprimer la promotion "${titre}" ?`)) return;
+  db.ref(`contenu/promotions/${id}`).remove()
+    .then(() => showToast('Promotion supprimée'))
+    .catch(() => showToast('Erreur suppression', 'error'));
+}
+
+// =====================================================
+// ADMIN — CONTENU : PUBS PARTENAIRES
+// =====================================================
+function renderAdminPubs() {
+  const el = document.getElementById('pubsAdminList');
+  const items = Object.entries(pubs);
+  el.innerHTML = items.length ? items.map(([id, p]) => `
+    <div class="cnt-item">
+      <div>
+        <div class="ci-t">${p.nom || ''}</div>
+        <div class="ci-d">${p.texte || ''}</div>
+      </div>
+      <div class="ci-act">
+        <button class="ci-btn danger" onclick="supprimerPub('${id}','${(p.nom || '').replace(/'/g, "\\'")}')" title="Supprimer">✕</button>
+      </div>
+    </div>`).join('') : '<div style="color:rgba(255,255,255,.25);font-size:13px;padding:10px 0">Aucun partenaire.</div>';
+}
+
+function ajouterPub() {
+  const nom = document.getElementById('pbNom').value.trim();
+  if (!nom) { showToast('Le nom est obligatoire', 'error'); return; }
+  const texte = document.getElementById('pbTexte').value.trim();
+  const lien = document.getElementById('pbLien').value.trim();
+  db.ref('contenu/pubs').push({ nom, texte, lien, actif: true })
+    .then(() => {
+      showToast('✓ Partenaire ajouté', 'success');
+      ['pbNom', 'pbTexte', 'pbLien'].forEach(id => document.getElementById(id).value = '');
+    })
+    .catch(() => showToast('Erreur ajout partenaire', 'error'));
+}
+
+function supprimerPub(id, nom) {
+  if (!confirm(`Supprimer le partenaire "${nom}" ?`)) return;
+  db.ref(`contenu/pubs/${id}`).remove()
+    .then(() => showToast('Partenaire supprimé'))
+    .catch(() => showToast('Erreur suppression', 'error'));
+}
+
+// =====================================================
+// ADMIN — CONTENU : ANNONCE URGENTE
+// =====================================================
+function renderAdminAnnonce() {
+  if (annonce && annonce.texte) {
+    document.getElementById('anTexte').value = annonce.texte;
+    document.getElementById('anCouleur').value = annonce.couleur || '#c4607e';
+  }
+}
+
+function publierAnnonce() {
+  const texte = document.getElementById('anTexte').value.trim();
+  if (!texte) { showToast('Le texte est obligatoire', 'error'); return; }
+  const couleur = document.getElementById('anCouleur').value;
+  db.ref('contenu/annonce').set({ texte, couleur })
+    .then(() => showToast('✓ Annonce publiée', 'success'))
+    .catch(() => showToast('Erreur publication annonce', 'error'));
+}
+
+function retirerAnnonce() {
+  db.ref('contenu/annonce').remove()
+    .then(() => {
+      showToast('Annonce retirée');
+      document.getElementById('anTexte').value = '';
+    })
+    .catch(() => showToast('Erreur', 'error'));
+}
+
+// =====================================================
+// ADMIN — CONTENU : THÈME D'ÉVÉNEMENT
+// =====================================================
+function renderAdminEvenement() {
+  document.getElementById('evTheme').value = (evenement && evenement.theme) || 'aucun';
+}
+
+function appliquerThemeAdmin() {
+  const theme = document.getElementById('evTheme').value;
+  const action = theme === 'aucun' ? db.ref('contenu/evenement').remove() : db.ref('contenu/evenement').set({ theme });
+  action.then(() => showToast('✓ Thème appliqué', 'success')).catch(() => showToast('Erreur', 'error'));
+}
+
+// =====================================================
+// ADMIN — STATISTIQUES
+// =====================================================
+function renderMeilleuresVentes() {
+  const totaux = {};
+  Object.values(cmds).forEach(c => {
+    if (!c.produit || !['en_attente_livraison', 'livré'].includes(c.statut)) return;
+    const id = c.produit.id;
+    if (!totaux[id]) totaux[id] = { nom: c.produit.nom, total: 0, qte: 0 };
+    totaux[id].total += Number(c.montant || 0);
+    totaux[id].qte += 1;
+  });
+  const arr = Object.values(totaux).sort((a, b) => b.total - a.total).slice(0, 10);
+  const el = document.getElementById('statsMeilleuresVentes');
+  el.innerHTML = arr.length ? arr.map((p, i) => `
+    <div class="cnt-item">
+      <div>
+        <div class="ci-t">#${i + 1} — ${p.nom}</div>
+        <div class="ci-d">${p.qte} vente(s)</div>
+      </div>
+      <div class="ci-t" style="color:var(--rose)">${p.total.toLocaleString()} FCFA</div>
+    </div>`).join('') : '<div style="color:rgba(255,255,255,.25);font-size:13px;padding:10px 0">Pas encore de commandes payées.</div>';
+}
+
+function renderCommandesNonFinalisees() {
+  const items = Object.entries(cmds).filter(([, c]) => !['en_attente_livraison', 'livré'].includes(c.statut));
+  const el = document.getElementById('statsNonFinalisees');
+  el.innerHTML = items.length ? items.map(([id, c]) => cmdCard(id, c)).join('') : '<div style="color:rgba(255,255,255,.25);font-size:13px;padding:10px 0">Aucune.</div>';
 }
 
 // =====================================================
