@@ -59,6 +59,8 @@ nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.97);backdrop-
 .nav-links a:hover{color:var(--rose-dark)}
 .nav-r{display:flex;align-items:center;gap:14px;position:relative}
 .notif-btn{background:none;border:none;cursor:pointer;font-size:20px;position:relative}
+.cart-btn{background:none;border:none;cursor:pointer;font-size:20px;position:relative;margin-right:6px}
+.cart-badge{position:absolute;top:-4px;right:-6px;width:16px;height:16px;background:var(--rose-dark);color:#fff;border-radius:50%;font-size:9px;display:flex;align-items:center;justify-content:center}
 .nbadge{position:absolute;top:-4px;right:-4px;width:16px;height:16px;background:var(--rose-dark);color:#fff;border-radius:50%;font-size:9px;display:none;align-items:center;justify-content:center}
 .nbadge.show{display:flex}
 .ndrop{display:none;position:absolute;top:52px;right:0;width:290px;background:#fff;border:1px solid rgba(232,160,180,.3);border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.12);z-index:200;overflow:hidden;max-height:320px;overflow-y:auto}
@@ -167,6 +169,31 @@ nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.97);backdrop-
 .mp{font-family:'Playfair Display',serif;font-size:30px;font-weight:700;color:var(--rose-dark);margin-bottom:18px}
 .md{font-family:'Cormorant Garamond',serif;font-size:15px;line-height:1.7;color:#666;margin-bottom:20px}
 .mst{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:18px}
+
+/* PANIER */
+.cart-panel{background:#fff;border-radius:12px;width:100%;max-width:460px;max-height:88vh;display:flex;flex-direction:column}
+.cart-head{display:flex;justify-content:space-between;align-items:center;padding:24px 26px 14px}
+.cart-body{padding:0 26px;overflow-y:auto;flex:1}
+.cart-item{display:flex;gap:12px;padding:14px 0;border-bottom:1px solid rgba(0,0,0,.06);align-items:center}
+.cart-item .ci-img{width:52px;height:52px;border-radius:8px;background:var(--rose-pale);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;overflow:hidden}
+.cart-item .ci-img img{width:100%;height:100%;object-fit:cover}
+.cart-item .ci-info{flex:1;min-width:0}
+.cart-item .ci-nom{font-size:13.5px;font-weight:600;color:var(--noir)}
+.cart-item .ci-meta{font-size:11px;color:#999;margin-top:2px}
+.qty-ctrl{display:flex;align-items:center;gap:9px;margin-top:6px}
+.qty-btn{width:22px;height:22px;border:1px solid rgba(0,0,0,.15);background:#fff;border-radius:4px;cursor:pointer;font-size:13px;line-height:1;display:flex;align-items:center;justify-content:center}
+.qty-btn:hover{background:var(--rose-pale);border-color:var(--rose-dark)}
+.qty-val{font-size:13px;min-width:16px;text-align:center}
+.ci-prix{font-size:13.5px;font-weight:700;color:var(--rose-dark);white-space:nowrap}
+.ci-del{background:none;border:none;color:#ccc;cursor:pointer;font-size:15px;padding:4px}
+.ci-del:hover{color:#f44336}
+.cart-foot{padding:18px 26px 26px;border-top:1px solid rgba(0,0,0,.06)}
+.cart-total-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;font-family:'Playfair Display',serif}
+.cart-total-row .ctr-label{font-size:14px;color:#777}
+.cart-total-row .ctr-val{font-size:24px;font-weight:700;color:var(--noir)}
+.cart-empty{text-align:center;padding:50px 20px;color:#aaa;font-family:'Cormorant Garamond',serif;font-size:16px;font-style:italic}
+.co-items-summary{background:var(--rose-pale);border-radius:8px;padding:12px 16px;margin-bottom:16px;max-height:150px;overflow-y:auto}
+.co-items-summary .cis-row{display:flex;justify-content:space-between;font-size:12.5px;padding:4px 0;color:#555}
 .mszs{display:flex;gap:7px;margin-bottom:20px;flex-wrap:wrap}
 .msz{border:1.5px solid rgba(0,0,0,.13);padding:7px 13px;font-size:11px;cursor:pointer;border-radius:2px;transition:all .2s;font-family:'Josefin Sans',sans-serif;letter-spacing:1px}
 .msz:hover,.msz.sel{border-color:var(--rose-dark);background:var(--rose-pale);color:var(--rose-dark)}
@@ -365,6 +392,7 @@ section{scroll-margin-top:66px}
       <li><a href="#avis">Avis</a></li>
     </ul>
     <div class="nav-r">
+      <button class="cart-btn" onclick="toggleCart()">🛒<span class="cart-badge" id="cartBadge" style="display:none">0</span></button>
       <button class="notif-btn" onclick="toggleNotif()">🔔<span class="nbadge" id="nbadge">0</span></button>
       <div class="ndrop" id="ndrop">
         <div class="nh">Notifications</div>
@@ -478,6 +506,21 @@ section{scroll-margin-top:66px}
   <div class="fbot">© 2025 D2 Shop • Brazzaville, Congo • Tous droits réservés</div>
 </div>
 
+<!-- PANIER -->
+<div class="mover" id="cartDrawer" onclick="if(event.target===this)toggleCart()">
+  <div class="cart-panel">
+    <div class="cart-head">
+      <div class="mn" style="font-size:20px;margin:0">✦ Mon panier</div>
+      <button class="mcl" style="float:none;margin:0" onclick="toggleCart()">✕</button>
+    </div>
+    <div class="cart-body" id="cartItemsList"></div>
+    <div class="cart-foot" id="cartFoot" style="display:none">
+      <div class="cart-total-row"><span class="ctr-label">Total</span><span class="ctr-val" id="cartTotalVal">0 FCFA</span></div>
+      <button class="btn-p" style="width:100%;text-align:center" onclick="ouvrirCheckoutDepuisPanier()">✦ Passer la commande</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL PRODUIT -->
 <div class="mover" id="modal" onclick="if(event.target===this)this.classList.remove('open')">
   <div class="mbox">
@@ -490,7 +533,7 @@ section{scroll-margin-top:66px}
       <div class="md" id="mDesc"></div>
       <div class="mst" id="mStock"></div>
       <div class="mszs" id="mSizes"></div>
-      <button class="bwa" id="mWA">🛒 Commander & payer</button>
+      <button class="bwa" id="mWA">🛒 Ajouter au panier</button>
     </div>
   </div>
 </div>
@@ -501,10 +544,9 @@ section{scroll-margin-top:66px}
     <div class="mc" style="padding:32px">
       <button class="mcl" onclick="closeCheckout()">✕</button>
       <div class="mey">✦ Commande</div>
-      <div class="mn" id="coNom" style="font-size:20px"></div>
-      <div class="mp" id="coPrix" style="font-size:22px;margin-bottom:6px"></div>
-      <div class="mst" id="coTaille" style="display:none;margin-bottom:14px"></div>
-      <input type="hidden" id="coTailleVal">
+      <div class="mn" style="font-size:20px">Récapitulatif</div>
+      <div class="co-items-summary" id="coItemsSummary"></div>
+      <div class="mp" id="coPrix" style="font-size:22px;margin-bottom:14px">0 FCFA</div>
 
       <div id="coStep1">
         <div class="fg"><label>Nom</label><input type="text" id="ckNom" placeholder="Ex: Malonga"></div>
@@ -820,6 +862,7 @@ window.addEventListener('load', () => {
     prods = snap.val() || {};
     renderProds(curFilter);
     renderAdmList();
+    renderPanier();
   }, err => {
     console.error('Firebase erreur:', err);
     showToast('Erreur connexion Firebase', 'error');
@@ -999,8 +1042,8 @@ function renderProds(f) {
           <div class="pp">${Number(p.prix).toLocaleString()} <span class="pcu">FCFA</span></div>
           <span class="sl2">${sl}</span>
         </div>
-        <button class="bwa" ${ep ? 'disabled' : `onclick="event.stopPropagation();openCheckout('${id}')"`}>
-          ${ep ? '✕ Article épuisé' : '🛒 Commander & payer'}
+        <button class="bwa" ${ep ? 'disabled' : `onclick="event.stopPropagation();ajouterAuPanier('${id}')"`}>
+          ${ep ? '✕ Article épuisé' : '🛒 Ajouter au panier'}
         </button>
       </div>
     </div>`;
@@ -1033,7 +1076,10 @@ function openModal(id) {
   const tz = p.tailles ? p.tailles.split(',').map(t => t.trim()) : [];
   document.getElementById('mSizes').innerHTML = tz.map(t =>
     `<div class="msz" onclick="selSz(this)">${t}</div>`).join('');
-  document.getElementById('mWA').onclick = () => openCheckout(id);
+  document.getElementById('mWA').onclick = () => {
+    const sz = document.querySelector('.msz.sel');
+    ajouterAuPanier(id, sz ? sz.textContent : null);
+  };
   document.getElementById('modal').classList.add('open');
 }
 function selSz(el) {
@@ -1042,30 +1088,148 @@ function selSz(el) {
 }
 
 // =====================================================
-// COMMANDE & PAIEMENT (OpenPay)
+// PANIER
 // =====================================================
-let checkoutProdId = null;
-let checkoutPollTimer = null;
+let panier = {};
+try { panier = JSON.parse(localStorage.getItem('d2shop_panier') || '{}'); } catch (e) { panier = {}; }
 
-function openCheckout(id) {
+function clePanier(id, taille) {
+  return `${id}::${taille || ''}`;
+}
+
+function sauvegarderPanier() {
+  try { localStorage.setItem('d2shop_panier', JSON.stringify(panier)); } catch (e) {}
+}
+
+function ajouterAuPanier(id, taille) {
   const p = prods[id];
   if (!p || p.stock <= 0) return;
-  checkoutProdId = id;
-
-  const sz = document.querySelector('.msz.sel');
+  const key = clePanier(id, taille);
+  const qteActuelle = panier[key] ? panier[key].qte : 0;
+  if (qteActuelle + 1 > p.stock) {
+    showToast(`⚠ Stock limité : seulement ${p.stock} disponible(s)`, 'error');
+    return;
+  }
+  if (panier[key]) {
+    panier[key].qte += 1;
+  } else {
+    panier[key] = { id, taille: taille || null, qte: 1 };
+  }
+  sauvegarderPanier();
+  renderPanier();
+  showToast(`✓ "${p.nom}" ajouté au panier`, 'success');
   document.getElementById('modal').classList.remove('open');
+}
 
-  document.getElementById('coNom').textContent = p.nom;
-  document.getElementById('coPrix').textContent = Number(p.prix).toLocaleString() + ' FCFA';
-  document.getElementById('coTaille').textContent = sz ? sz.textContent : '';
-  document.getElementById('coTaille').style.display = sz ? 'block' : 'none';
-  document.getElementById('coTailleVal').value = sz ? sz.textContent : '';
+function changerQte(key, delta) {
+  const item = panier[key];
+  if (!item) return;
+  const p = prods[item.id];
+  const nouvelleQte = item.qte + delta;
+  if (nouvelleQte <= 0) {
+    delete panier[key];
+  } else if (p && nouvelleQte > p.stock) {
+    showToast(`⚠ Stock limité : seulement ${p.stock} disponible(s)`, 'error');
+    return;
+  } else {
+    item.qte = nouvelleQte;
+  }
+  sauvegarderPanier();
+  renderPanier();
+}
+
+function retirerDuPanier(key) {
+  delete panier[key];
+  sauvegarderPanier();
+  renderPanier();
+}
+
+function panierArticlesValides() {
+  // Filtre les articles dont le produit existe encore et est en stock (au cas où supprimé/épuisé entre-temps)
+  return Object.entries(panier)
+    .map(([key, item]) => ({ key, ...item, prod: prods[item.id] }))
+    .filter(a => a.prod);
+}
+
+function renderPanier() {
+  const articles = panierArticlesValides();
+  const badge = document.getElementById('cartBadge');
+  const totalQte = articles.reduce((s, a) => s + a.qte, 0);
+  if (totalQte > 0) {
+    badge.textContent = totalQte;
+    badge.style.display = 'flex';
+  } else {
+    badge.style.display = 'none';
+  }
+
+  const listEl = document.getElementById('cartItemsList');
+  const footEl = document.getElementById('cartFoot');
+
+  if (!articles.length) {
+    listEl.innerHTML = '<div class="cart-empty">Ton panier est vide.<br>Ajoute un article pour commencer !</div>';
+    footEl.style.display = 'none';
+    return;
+  }
+
+  let total = 0;
+  listEl.innerHTML = articles.map(a => {
+    const sousTotal = a.prod.prix * a.qte;
+    total += sousTotal;
+    const img = a.prod.imgB64 ? `<img src="${a.prod.imgB64}" alt="">` : (a.prod.emoji || '🛍️');
+    return `
+      <div class="cart-item">
+        <div class="ci-img">${img}</div>
+        <div class="ci-info">
+          <div class="ci-nom">${a.prod.nom}</div>
+          <div class="ci-meta">${a.taille ? 'Taille : ' + a.taille : ''}</div>
+          <div class="qty-ctrl">
+            <button class="qty-btn" onclick="changerQte('${a.key}',-1)">−</button>
+            <span class="qty-val">${a.qte}</span>
+            <button class="qty-btn" onclick="changerQte('${a.key}',1)">+</button>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+          <div class="ci-prix">${sousTotal.toLocaleString()} FCFA</div>
+          <button class="ci-del" onclick="retirerDuPanier('${a.key}')" title="Retirer">✕</button>
+        </div>
+      </div>`;
+  }).join('');
+
+  footEl.style.display = 'block';
+  document.getElementById('cartTotalVal').textContent = total.toLocaleString() + ' FCFA';
+}
+
+function toggleCart() {
+  document.getElementById('cartDrawer').classList.toggle('open');
+}
+
+// =====================================================
+// COMMANDE & PAIEMENT (OpenPay)
+// =====================================================
+let checkoutPollTimer = null;
+
+function ouvrirCheckoutDepuisPanier() {
+  const articles = panierArticlesValides();
+  if (!articles.length) return;
+
+  document.getElementById('cartDrawer').classList.remove('open');
+
+  let total = 0;
+  document.getElementById('coItemsSummary').innerHTML = articles.map(a => {
+    const sousTotal = a.prod.prix * a.qte;
+    total += sousTotal;
+    return `<div class="cis-row"><span>${a.qte} × ${a.prod.nom}${a.taille ? ' (' + a.taille + ')' : ''}</span><span>${sousTotal.toLocaleString()} FCFA</span></div>`;
+  }).join('');
+  document.getElementById('coPrix').textContent = total.toLocaleString() + ' FCFA';
 
   ['ckNom','ckPrenom','ckAdresse','ckTel'].forEach(id2 => document.getElementById(id2).value = '');
   document.getElementById('ckProvider').value = 'MTN';
   document.getElementById('coStep1').style.display = 'block';
   document.getElementById('coStep2').style.display = 'none';
   document.getElementById('coErr').style.display = 'none';
+  const btn = document.getElementById('ckPayBtn');
+  btn.disabled = false;
+  btn.textContent = '✦ Payer maintenant';
   document.getElementById('checkout').classList.add('open');
 }
 
@@ -1089,6 +1253,13 @@ async function submitCheckout() {
     return;
   }
 
+  const articles = panierArticlesValides();
+  if (!articles.length) {
+    errEl.textContent = '⚠ Ton panier est vide.';
+    errEl.style.display = 'block';
+    return;
+  }
+
   const btn = document.getElementById('ckPayBtn');
   btn.disabled = true;
   btn.textContent = '⟳ Envoi de la demande de paiement...';
@@ -1098,7 +1269,7 @@ async function submitCheckout() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        produit: { id: checkoutProdId, taille: document.getElementById('coTailleVal').value || null },
+        items: articles.map(a => ({ id: a.id, taille: a.taille, qte: a.qte })),
         client: { nom, prenom, adresse, telephone, provider }
       })
     });
@@ -1141,6 +1312,9 @@ function pollOrderStatus(orderId) {
 
       if (data.statut === 'en_attente_livraison' || data.statut === 'livré') {
         clearInterval(checkoutPollTimer);
+        panier = {};
+        sauvegarderPanier();
+        renderPanier();
         document.getElementById('coStep2').innerHTML =
           '<div class="co-ok">✓ Paiement confirmé !</div><p style="font-size:13px;color:#777;margin-top:8px">Ta commande est enregistrée. D2 Shop va préparer la livraison.</p>' +
           '<button class="btn-p" style="margin-top:20px;width:100%;text-align:center" onclick="closeCheckout()">Fermer</button>';
@@ -1541,12 +1715,16 @@ const STATUT_LABELS = {
 function cmdCard(id, c) {
   const st = STATUT_LABELS[c.statut] || { txt: c.statut, cls: 'attente' };
   const date = c.createdAt ? new Date(c.createdAt).toLocaleString('fr-FR') : '';
-  const taille = c.produit && c.produit.taille ? ` (Taille : ${c.produit.taille})` : '';
+  // Compatibilité : anciennes commandes avec un seul "produit", nouvelles avec un tableau "items"
+  const items = c.items || (c.produit ? [{ ...c.produit, qte: 1 }] : []);
+  const detailArticles = items.map(it =>
+    `${it.qte || 1} × ${it.nom || '—'}${it.taille ? ' (' + it.taille + ')' : ''}`
+  ).join('<br>');
   return `
     <div class="cmd-item">
       <div class="cmd-top">
         <div>
-          <div class="cmd-prod">${c.produit ? c.produit.nom : '—'}${taille}</div>
+          <div class="cmd-prod">${detailArticles || '—'}</div>
           <div class="cmd-prix">${c.montant ? Number(c.montant).toLocaleString() + ' FCFA' : ''}</div>
         </div>
         <span class="cmd-statut ${st.cls}">${st.txt}</span>
@@ -1825,11 +2003,14 @@ function appliquerThemeAdmin() {
 function renderMeilleuresVentes() {
   const totaux = {};
   Object.values(cmds).forEach(c => {
-    if (!c.produit || !['en_attente_livraison', 'livré'].includes(c.statut)) return;
-    const id = c.produit.id;
-    if (!totaux[id]) totaux[id] = { nom: c.produit.nom, total: 0, qte: 0 };
-    totaux[id].total += Number(c.montant || 0);
-    totaux[id].qte += 1;
+    if (!['en_attente_livraison', 'livré'].includes(c.statut)) return;
+    const items = c.items || (c.produit ? [{ ...c.produit, qte: 1 }] : []);
+    items.forEach(it => {
+      if (!it.id) return;
+      if (!totaux[it.id]) totaux[it.id] = { nom: it.nom, total: 0, qte: 0 };
+      totaux[it.id].total += Number(it.prix || 0) * (it.qte || 1);
+      totaux[it.id].qte += (it.qte || 1);
+    });
   });
   const arr = Object.values(totaux).sort((a, b) => b.total - a.total).slice(0, 10);
   const el = document.getElementById('statsMeilleuresVentes');
