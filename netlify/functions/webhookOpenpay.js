@@ -25,8 +25,11 @@ exports.handler = async (event) => {
 
     if (!dejaTraite) {
       if (data.status === "success") {
-        if (order.produit && order.produit.id) {
-          await db.ref(`produits/${order.produit.id}/stock`).transaction((stock) => Math.max(0, (stock || 0) - 1));
+        const items = order.items || (order.produit ? [{ ...order.produit, qte: 1 }] : []);
+        for (const it of items) {
+          if (it && it.id) {
+            await db.ref(`produits/${it.id}/stock`).transaction((stock) => Math.max(0, (stock || 0) - (it.qte || 1)));
+          }
         }
         await orderRef.update({ statut: "en_attente_livraison", paidAt: Date.now() });
       } else if (data.status === "failed" || data.status === "cancelled") {
@@ -37,6 +40,7 @@ exports.handler = async (event) => {
     return { statusCode: 200, body: JSON.stringify({ success: true }) };
   } catch (err) {
     console.error("Erreur webhookOpenpay:", err);
+    // On répond quand même 200 pour éviter des relances infinies
     return { statusCode: 200, body: JSON.stringify({ success: true }) };
   }
 };
