@@ -194,6 +194,25 @@ nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.97);backdrop-
 .cart-empty{text-align:center;padding:50px 20px;color:#aaa;font-family:'Cormorant Garamond',serif;font-size:16px;font-style:italic}
 .co-items-summary{background:var(--rose-pale);border-radius:8px;padding:12px 16px;margin-bottom:16px;max-height:150px;overflow-y:auto}
 .co-items-summary .cis-row{display:flex;justify-content:space-between;font-size:12.5px;padding:4px 0;color:#555}
+
+/* RECHERCHE */
+.search-row{max-width:420px;margin:0 auto 22px}
+.search-row input{width:100%;border:1.5px solid rgba(0,0,0,.11);border-radius:24px;padding:11px 20px;font-family:'Josefin Sans',sans-serif;font-size:13px;outline:none;transition:border-color .2s}
+.search-row input:focus{border-color:var(--rose-dark)}
+
+/* FAVORIS */
+.fav-btn{position:absolute;top:10px;right:10px;width:32px;height:32px;background:rgba(255,255,255,.9);border:none;border-radius:50%;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;z-index:2;color:#ccc;transition:transform .15s}
+.fav-btn:hover{transform:scale(1.1)}
+.fav-btn.active{color:var(--rose-dark)}
+.fav-btn-modal{position:absolute;top:16px;right:16px;background:rgba(255,255,255,.9);border:none;border-radius:50%;width:38px;height:38px;cursor:pointer;font-size:17px;color:#ccc;z-index:2}
+.fav-btn-modal.active{color:var(--rose-dark)}
+
+/* SUIVI DE COMMANDE */
+.suivi-item{background:#f8f7f6;border:1px solid rgba(0,0,0,.06);border-radius:10px;padding:14px 16px;margin-bottom:10px}
+.suivi-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:6px}
+.suivi-prod{color:#333;font-size:13px;font-weight:600}
+.suivi-prix{color:var(--rose-dark);font-size:12.5px;margin-top:2px}
+.suivi-date{font-size:10.5px;color:#aaa;margin-top:6px}
 .mszs{display:flex;gap:7px;margin-bottom:20px;flex-wrap:wrap}
 .msz{border:1.5px solid rgba(0,0,0,.13);padding:7px 13px;font-size:11px;cursor:pointer;border-radius:2px;transition:all .2s;font-family:'Josefin Sans',sans-serif;letter-spacing:1px}
 .msz:hover,.msz.sel{border-color:var(--rose-dark);background:var(--rose-pale);color:var(--rose-dark)}
@@ -433,12 +452,14 @@ section{scroll-margin-top:66px}
       <div class="sli"></div>
     </div>
     <div id="cat">
+      <div class="search-row"><input type="text" id="searchInput" placeholder="🔍 Rechercher un article..." oninput="onSearchInput()"></div>
       <div class="filters">
         <button class="fb active" onclick="doFilter('tous',this)">Tout</button>
         <button class="fb" onclick="doFilter('femme',this)">Femme</button>
         <button class="fb" onclick="doFilter('homme',this)">Homme</button>
         <button class="fb" onclick="doFilter('accessoire',this)">Accessoires</button>
         <button class="fb" onclick="doFilter('nouveau',this)">Nouveautés</button>
+        <button class="fb" onclick="doFilter('favoris',this)">♥ Favoris</button>
       </div>
       <div class="pg" id="pg"><div class="em">⟳ Chargement de la collection...</div></div>
     </div>
@@ -484,6 +505,21 @@ section{scroll-margin-top:66px}
     <div id="pubsList"></div>
   </section>
 
+  <!-- SUIVI DE COMMANDE -->
+  <div class="mover" id="suiviModal" onclick="if(event.target===this)fermerSuivi()">
+    <div class="mbox" style="grid-template-columns:1fr;max-width:440px">
+      <div class="mc" style="padding:32px">
+        <button class="mcl" onclick="fermerSuivi()">✕</button>
+        <div class="mey">✦ Suivi</div>
+        <div class="mn" style="font-size:20px">Suivre ma commande</div>
+        <p style="font-size:12.5px;color:#888;margin-top:6px">Renseigne le numéro de téléphone utilisé lors de ta commande.</p>
+        <div class="fg" style="margin-top:16px"><label>Numéro de téléphone</label><input type="tel" id="suiviTel" placeholder="Ex: 06XXXXXXX" onkeydown="if(event.key==='Enter')rechercherCommandes()"></div>
+        <button class="btn-p" id="suiviBtn" style="width:100%;text-align:center" onclick="rechercherCommandes()">Rechercher</button>
+        <div id="suiviResultats" style="margin-top:18px"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- FOOTER -->
   <footer>
     <div>
@@ -495,15 +531,18 @@ section{scroll-margin-top:66px}
       <a href="#cat-section">Collection</a>
       <a href="#banniere-section">Nouveautés</a>
       <a href="#avis">Avis clients</a>
+      <a href="#" onclick="ouvrirSuivi();return false">Suivre ma commande</a>
     </div>
     <div class="fc">
       <h4>Contact</h4>
       <a href="https://wa.me/242XXXXXXXXX" id="waLink">WhatsApp</a>
-      <a href="#">Instagram</a>
-      <a href="#">Facebook</a>
+      <a href="#" id="mailLink">contact@d2shop.cg</a>
+      <a href="#" id="igLink">Instagram</a>
+      <a href="#" id="fbLink">Facebook</a>
+      <p id="adresseTxt" style="font-size:12px;color:#999;margin-top:10px"></p>
     </div>
   </footer>
-  <div class="fbot">© 2025 D2 Shop • Brazzaville, Congo • Tous droits réservés</div>
+  <div class="fbot">© <span id="anneeFooter"></span> D2 Shop • Brazzaville, Congo • Tous droits réservés</div>
 </div>
 
 <!-- PANIER -->
@@ -737,6 +776,16 @@ section{scroll-margin-top:66px}
       </div>
       <button class="asub" onclick="appliquerThemeAdmin()">✦ Appliquer ce thème</button>
     </div>
+
+    <div class="ast" style="margin-top:44px">✦ Informations de contact (footer du site)</div>
+    <div class="cnt-form">
+      <div class="fg"><label>Numéro WhatsApp</label><input type="text" id="ctWhatsapp" placeholder="242XXXXXXXXX"></div>
+      <div class="fg"><label>E-mail</label><input type="text" id="ctEmail" placeholder="contact@d2shop.cg"></div>
+      <div class="fg"><label>Adresse</label><input type="text" id="ctAdresse" placeholder="Ex: Moungali, Brazzaville"></div>
+      <div class="fg"><label>Lien Instagram</label><input type="text" id="ctInstagram" placeholder="https://instagram.com/..."></div>
+      <div class="fg"><label>Lien Facebook</label><input type="text" id="ctFacebook" placeholder="https://facebook.com/..."></div>
+      <button class="asub" onclick="enregistrerContact()">✦ Enregistrer le contact</button>
+    </div>
   </div>
 
   <!-- PANNEAU STATISTIQUES -->
@@ -778,8 +827,9 @@ const WA_NUM = "242XXXXXXXXX"; // Ton numéro WhatsApp (contact, footer uniqueme
 // pas besoin de CORS ni d'URL complète).
 const FUNCTIONS_BASE = "/.netlify/functions";
 
-// Mettre à jour le lien footer
+// Mettre à jour le lien footer (valeur par défaut, écrasée par contenu/contact si configuré)
 document.getElementById('waLink').href = "https://wa.me/" + WA_NUM;
+document.getElementById('anneeFooter').textContent = new Date().getFullYear();
 
 // =====================================================
 // PWA — Installation
@@ -832,7 +882,11 @@ let promos = {};
 let pubs = {};
 let annonce = null;
 let evenement = null;
+let contact = null;
 let curFilter = 'tous';
+let searchTerm = '';
+let favoris = {};
+try { favoris = JSON.parse(localStorage.getItem('d2shop_favoris') || '{}'); } catch (e) { favoris = {}; }
 let selStars = 0;
 let newNotifs = 0;
 
@@ -871,6 +925,9 @@ window.addEventListener('load', () => {
   // Firebase : écoute en temps réel les avis
   db.ref('avis').orderByChild('timestamp').on('value', snap => {
     renderAvis(snap.val() || {});
+  }, err => {
+    console.error('Firebase erreur (avis):', err);
+    document.getElementById('avg').innerHTML = '<div class="em" style="grid-column:1/-1;color:#f87171">⛔ Erreur de chargement des avis. Vérifie les règles de la base de données.</div>';
   });
 
   // Firebase : écoute en temps réel les commandes
@@ -911,6 +968,11 @@ window.addEventListener('load', () => {
     evenement = snap.val() || null;
     appliquerTheme();
     renderAdminEvenement();
+  });
+  db.ref('contenu/contact').on('value', snap => {
+    contact = snap.val() || null;
+    renderContact();
+    renderAdminContact();
   });
 });
 
@@ -1007,13 +1069,24 @@ function addNotif(msg) {
 function renderProds(f) {
   const g = document.getElementById('pg');
   let items = Object.entries(prods);
-  if (f && f !== 'tous')
+
+  if (f === 'favoris') {
+    items = items.filter(([id]) => favoris[id]);
+  } else if (f && f !== 'tous') {
     items = f === 'nouveau'
       ? items.filter(([,p]) => p.badge === 'Nouveau')
       : items.filter(([,p]) => p.cat === f);
+  }
+
+  if (searchTerm) {
+    items = items.filter(([,p]) =>
+      (p.nom||'').toLowerCase().includes(searchTerm) ||
+      (p.desc||'').toLowerCase().includes(searchTerm)
+    );
+  }
 
   if (!items.length) {
-    g.innerHTML = '<div class="em">Aucun article dans cette catégorie.</div>';
+    g.innerHTML = `<div class="em">${f === 'favoris' ? 'Aucun favori pour l\'instant — clique sur ♡ sur un article pour l\'ajouter.' : searchTerm ? 'Aucun résultat pour cette recherche.' : 'Aucun article dans cette catégorie.'}</div>`;
     return;
   }
   g.innerHTML = items.map(([id, p]) => {
@@ -1031,9 +1104,13 @@ function renderProds(f) {
       : p.badge ? `<span class="pbg">${p.badge}</span>` : '';
     const tz = p.tailles
       ? p.tailles.split(',').map(t => `<span class="sz">${t.trim()}</span>`).join('') : '';
+    const isFav = !!favoris[id];
     return `
     <div class="pc${ep?' ep':''}" onclick="${ep ? '' : `openModal('${id}')`}">
-      <div class="pi">${im}${bh}</div>
+      <div class="pi">
+        <button class="fav-btn${isFav?' active':''}" onclick="event.stopPropagation();toggleFavori('${id}')">${isFav?'♥':'♡'}</button>
+        ${im}${bh}
+      </div>
       <div class="pin">
         <div class="pn">${p.nom}</div>
         <div class="pd">${(p.desc||'').substring(0,85)}...</div>
@@ -1050,6 +1127,11 @@ function renderProds(f) {
   }).join('');
 }
 
+function onSearchInput() {
+  searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
+  renderProds(curFilter);
+}
+
 function doFilter(f, btn) {
   curFilter = f;
   document.querySelectorAll('.fb').forEach(b => b.classList.remove('active'));
@@ -1063,9 +1145,10 @@ function doFilter(f, btn) {
 function openModal(id) {
   const p = prods[id];
   if (!p || p.stock <= 0) return;
-  document.getElementById('mImg').innerHTML = p.imgB64
+  document.getElementById('mImg').innerHTML = (p.imgB64
     ? `<img src="${p.imgB64}" alt="${p.nom}">`
-    : `<span style="font-size:76px">${p.emoji||'🛍️'}</span>`;
+    : `<span style="font-size:76px">${p.emoji||'🛍️'}</span>`)
+    + `<button class="fav-btn-modal${favoris[id]?' active':''}" id="mFavBtn" data-id="${id}" onclick="event.stopPropagation();toggleFavori('${id}')">${favoris[id]?'♥':'♡'}</button>`;
   document.getElementById('mCat').textContent = {femme:'Collection Femme',homme:'Collection Homme',accessoire:'Accessoires'}[p.cat] || p.cat;
   document.getElementById('mNom').textContent = p.nom;
   document.getElementById('mPrix').textContent = Number(p.prix).toLocaleString() + ' FCFA';
@@ -1202,6 +1285,76 @@ function renderPanier() {
 function toggleCart() {
   document.getElementById('cartDrawer').classList.toggle('open');
 }
+
+// =====================================================
+// FAVORIS
+// =====================================================
+function toggleFavori(id) {
+  if (favoris[id]) delete favoris[id]; else favoris[id] = true;
+  try { localStorage.setItem('d2shop_favoris', JSON.stringify(favoris)); } catch (e) {}
+  renderProds(curFilter);
+  const modalFav = document.getElementById('mFavBtn');
+  if (modalFav && modalFav.dataset.id === id) {
+    modalFav.classList.toggle('active', !!favoris[id]);
+    modalFav.textContent = favoris[id] ? '♥' : '♡';
+  }
+}
+
+// =====================================================
+// SUIVI DE COMMANDE
+// =====================================================
+function ouvrirSuivi() {
+  document.getElementById('suiviTel').value = '';
+  document.getElementById('suiviResultats').innerHTML = '';
+  document.getElementById('suiviModal').classList.add('open');
+}
+
+function fermerSuivi() {
+  document.getElementById('suiviModal').classList.remove('open');
+}
+
+async function rechercherCommandes() {
+  const tel = document.getElementById('suiviTel').value.trim();
+  const resEl = document.getElementById('suiviResultats');
+  const btn = document.getElementById('suiviBtn');
+  if (!tel) {
+    resEl.innerHTML = '<p class="aerr" style="display:block">⚠ Renseigne ton numéro.</p>';
+    return;
+  }
+  btn.disabled = true;
+  btn.textContent = '⟳ Recherche...';
+  resEl.innerHTML = '';
+  try {
+    const res = await fetch(`${FUNCTIONS_BASE}/trackOrder?telephone=${encodeURIComponent(tel)}`);
+    const data = await res.json();
+    if (!res.ok) {
+      resEl.innerHTML = `<p class="aerr" style="display:block">⚠ ${data.error || 'Erreur.'}</p>`;
+    } else if (!data.commandes.length) {
+      resEl.innerHTML = '<p style="font-size:13px;color:#999;text-align:center;padding:10px 0">Aucune commande trouvée avec ce numéro.</p>';
+    } else {
+      resEl.innerHTML = data.commandes.map(c => {
+        const st = STATUT_LABELS[c.statut] || { txt: c.statut, cls: 'attente' };
+        const date = c.createdAt ? new Date(c.createdAt).toLocaleDateString('fr-FR') : '';
+        const detail = (c.items || []).map(it => `${it.qte || 1} × ${it.nom}`).join(', ');
+        return `<div class="suivi-item">
+          <div class="suivi-top">
+            <div><div class="suivi-prod">${detail || '—'}</div><div class="suivi-prix">${Number(c.montant || 0).toLocaleString()} FCFA</div></div>
+            <span class="cmd-statut ${st.cls}">${st.txt}</span>
+          </div>
+          <div class="suivi-date">${date}</div>
+        </div>`;
+      }).join('');
+    }
+  } catch (err) {
+    console.error('Erreur suivi:', err);
+    resEl.innerHTML = '<p class="aerr" style="display:block">⚠ Impossible de contacter le serveur.</p>';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Rechercher';
+  }
+}
+
+
 
 // =====================================================
 // COMMANDE & PAIEMENT (OpenPay)
@@ -1345,15 +1498,21 @@ function renderAvis(data) {
     g.innerHTML = '<div class="em" style="grid-column:1/-1;color:#bbb">Soyez le premier à laisser un avis !</div>';
     return;
   }
-  g.innerHTML = items.map(a => `
+  g.innerHTML = items.map(a => {
+    const note = Math.min(5, Math.max(0, parseInt(a.note) || 0));
+    const prenom = a.prenom || 'Client D2 Shop';
+    const texte = a.texte || '';
+    const date = a.date || '';
+    return `
     <div class="avc">
-      <div class="avst">${'★'.repeat(a.note)}${'☆'.repeat(5-a.note)}</div>
-      <div class="avt">"${a.texte}"</div>
+      <div class="avst">${'★'.repeat(note)}${'☆'.repeat(5-note)}</div>
+      <div class="avt">"${texte}"</div>
       <div class="ava">
-        <div class="avav">${a.prenom.charAt(0).toUpperCase()}</div>
-        <div><div class="avnm">${a.prenom}</div><div class="avdt">${a.date}</div></div>
+        <div class="avav">${prenom.charAt(0).toUpperCase()}</div>
+        <div><div class="avnm">${prenom}</div><div class="avdt">${date}</div></div>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 function setStars(n) {
   selStars = n;
@@ -1812,6 +1971,22 @@ function renderPubs() {
   }).join('');
 }
 
+function renderContact() {
+  const wa = (contact && contact.whatsapp) || WA_NUM;
+  document.getElementById('waLink').href = "https://wa.me/" + wa.replace(/\D/g, '');
+  const mailEl = document.getElementById('mailLink');
+  const email = (contact && contact.email) || '';
+  mailEl.textContent = email || 'contact@d2shop.cg';
+  mailEl.href = email ? 'mailto:' + email : '#';
+  const igEl = document.getElementById('igLink');
+  igEl.href = (contact && contact.instagram) || '#';
+  igEl.style.display = (contact && contact.instagram) ? 'block' : 'none';
+  const fbEl = document.getElementById('fbLink');
+  fbEl.href = (contact && contact.facebook) || '#';
+  fbEl.style.display = (contact && contact.facebook) ? 'block' : 'none';
+  document.getElementById('adresseTxt').textContent = (contact && contact.adresse) || '';
+}
+
 function appliquerTheme() {
   const old = document.getElementById('themeDeco');
   if (old) old.remove();
@@ -1995,6 +2170,28 @@ function appliquerThemeAdmin() {
   const theme = document.getElementById('evTheme').value;
   const action = theme === 'aucun' ? db.ref('contenu/evenement').remove() : db.ref('contenu/evenement').set({ theme });
   action.then(() => showToast('✓ Thème appliqué', 'success')).catch(() => showToast('Erreur', 'error'));
+}
+
+// =====================================================
+// ADMIN — CONTENU : INFORMATIONS DE CONTACT
+// =====================================================
+function renderAdminContact() {
+  document.getElementById('ctWhatsapp').value = (contact && contact.whatsapp) || '';
+  document.getElementById('ctEmail').value = (contact && contact.email) || '';
+  document.getElementById('ctAdresse').value = (contact && contact.adresse) || '';
+  document.getElementById('ctInstagram').value = (contact && contact.instagram) || '';
+  document.getElementById('ctFacebook').value = (contact && contact.facebook) || '';
+}
+
+function enregistrerContact() {
+  const whatsapp = document.getElementById('ctWhatsapp').value.trim();
+  const email = document.getElementById('ctEmail').value.trim();
+  const adresse = document.getElementById('ctAdresse').value.trim();
+  const instagram = document.getElementById('ctInstagram').value.trim();
+  const facebook = document.getElementById('ctFacebook').value.trim();
+  db.ref('contenu/contact').set({ whatsapp, email, adresse, instagram, facebook })
+    .then(() => showToast('✓ Contact mis à jour', 'success'))
+    .catch(() => showToast('Erreur enregistrement contact', 'error'));
 }
 
 // =====================================================
