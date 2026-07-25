@@ -58,6 +58,7 @@ nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.97);backdrop-
 .nav-links a{text-decoration:none;font-size:10px;font-weight:300;letter-spacing:2.5px;text-transform:uppercase;color:var(--gris);transition:color .2s}
 .nav-links a:hover{color:var(--rose-dark)}
 .nav-r{display:flex;align-items:center;gap:14px;position:relative}
+.hamburger{display:none;background:none;border:none;font-size:22px;cursor:pointer;color:var(--noir);padding:4px 8px}
 .notif-btn{background:none;border:none;cursor:pointer;font-size:20px;position:relative}
 .cart-btn{background:none;border:none;cursor:pointer;font-size:20px;position:relative;margin-right:6px}
 .cart-badge{position:absolute;top:-4px;right:-6px;width:16px;height:16px;background:var(--rose-dark);color:#fff;border-radius:50%;font-size:9px;display:flex;align-items:center;justify-content:center}
@@ -91,8 +92,8 @@ nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.97);backdrop-
 .bov{position:absolute;inset:0;background:linear-gradient(to right,rgba(0,0,0,.7),rgba(0,0,0,.2))}
 .bc{position:relative;z-index:2;text-align:center;color:#fff}
 .bl{font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--rose);margin-bottom:10px}
-.bt{font-family:'Playfair Display',serif;font-size:38px;font-weight:700;margin-bottom:14px}
-.bsb{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:17px;color:rgba(255,255,255,.75);margin-bottom:20px}
+.bt{font-family:'Playfair Display',serif;font-size:clamp(26px,6vw,38px);font-weight:700;margin-bottom:14px}
+.bsb{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(14px,2.5vw,17px);color:rgba(255,255,255,.75);margin-bottom:20px}
 .bdots{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:3}
 .bdot{width:6px;height:6px;border-radius:3px;background:rgba(255,255,255,.4);cursor:pointer;transition:all .3s}
 .bdot.active{width:22px;background:var(--rose)}
@@ -361,6 +362,16 @@ footer p{font-size:13px;line-height:1.8;max-width:275px}
 .adm-trig{position:fixed;bottom:80px;right:20px;width:42px;height:42px;background:rgba(0,0,0,.06);border:none;border-radius:50%;cursor:pointer;opacity:0;transition:opacity .3s;font-size:17px;z-index:50}
 .adm-trig:hover{opacity:1!important}
 
+/* TABLETTE */
+@media(max-width:1024px){
+  .pg{grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}
+  .promoStrip,#promoStrip,#pubsList{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+  .abo{padding:26px 20px}
+  .atabs{padding:0 20px}
+  .ahd{padding:14px 20px}
+}
+
+/* MOBILE */
 @media(max-width:700px){
   .mbox{grid-template-columns:1fr}
   .mi{min-height:200px;border-radius:12px 12px 0 0}
@@ -368,7 +379,37 @@ footer p{font-size:13px;line-height:1.8;max-width:275px}
   .guide{grid-template-columns:1fr 1fr}
   .agrid{grid-template-columns:1fr}
   .af.full{grid-column:1}
-  .nav-links{display:none}
+
+  nav{padding:0 16px}
+  .hamburger{display:block}
+  .nav-links{
+    display:none;flex-direction:column;position:fixed;top:66px;left:0;right:0;
+    background:#fff;padding:20px 24px;gap:18px;list-style:none;
+    border-bottom:1px solid rgba(232,160,180,.2);box-shadow:0 12px 24px rgba(0,0,0,.1);z-index:99;
+  }
+  .nav-links.mobile-open{display:flex}
+  .nav-links a{font-size:12px;letter-spacing:2px}
+
+  .pg{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
+  .pi{height:200px}
+
+  .ahd{padding:14px 18px;flex-wrap:wrap;gap:10px}
+  .ahd h2{font-size:16px}
+  .atabs{padding:0 16px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .atab{padding:12px 14px;white-space:nowrap;font-size:10px}
+  .cnt-form{max-width:100%}
+
+  .mc{padding:24px}
+  .cart-head,.cart-body,.cart-foot{padding-left:18px;padding-right:18px}
+  .qty-btn{width:28px;height:28px;font-size:15px}
+
+  .co-items-summary{max-height:120px}
+
+  #annonceBar{font-size:11px;padding:9px 40px 9px 14px}
+  .search-row{padding:0 6px}
+}
+@media(max-width:420px){
+  .pg{grid-template-columns:1fr 1fr}
 }
 html{scroll-behavior:smooth}
 section{scroll-margin-top:66px}
@@ -404,11 +445,12 @@ section{scroll-margin-top:66px}
 <!-- SITE -->
 <div id="site">
   <nav>
+    <button class="hamburger" id="hamburgerBtn" onclick="toggleMobileNav()">☰</button>
     <div class="nav-logo">D<span>2</span> Shop</div>
-    <ul class="nav-links">
-      <li><a href="#cat-section">Collection</a></li>
-      <li><a href="#banniere-section">Nouveautés</a></li>
-      <li><a href="#avis">Avis</a></li>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#cat-section" onclick="fermerMobileNav()">Collection</a></li>
+      <li><a href="#banniere-section" onclick="fermerMobileNav()">Nouveautés</a></li>
+      <li><a href="#avis" onclick="fermerMobileNav()">Avis</a></li>
     </ul>
     <div class="nav-r">
       <button class="cart-btn" onclick="toggleCart()">🛒<span class="cart-badge" id="cartBadge" style="display:none">0</span></button>
@@ -1039,6 +1081,16 @@ function goSlide(n) {
   cSlide = n;
   slides[n].classList.add('active');
   if (dots[n]) dots[n].classList.add('active');
+}
+
+// =====================================================
+// MENU MOBILE
+// =====================================================
+function toggleMobileNav() {
+  document.getElementById('navLinks').classList.toggle('mobile-open');
+}
+function fermerMobileNav() {
+  document.getElementById('navLinks').classList.remove('mobile-open');
 }
 
 // =====================================================
