@@ -214,6 +214,16 @@ nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.97);backdrop-
 .suivi-prod{color:#333;font-size:13px;font-weight:600}
 .suivi-prix{color:var(--rose-dark);font-size:12.5px;margin-top:2px}
 .suivi-date{font-size:10.5px;color:#aaa;margin-top:6px}
+
+/* AFFILIATION */
+.affil-item{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:16px 18px;margin-bottom:12px}
+.affil-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px}
+.affil-nom{color:#fff;font-size:14px;font-weight:600}
+.affil-lien{font-size:11px;color:var(--rose);margin-top:3px;word-break:break-all}
+.affil-stats{display:flex;gap:22px;margin-top:10px;flex-wrap:wrap}
+.affil-stat{text-align:left}
+.affil-stat .as-val{font-size:18px;font-weight:700;color:#fff;font-family:'Playfair Display',serif}
+.affil-stat .as-lbl{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-top:2px}
 .mszs{display:flex;gap:7px;margin-bottom:20px;flex-wrap:wrap}
 .msz{border:1.5px solid rgba(0,0,0,.13);padding:7px 13px;font-size:11px;cursor:pointer;border-radius:2px;transition:all .2s;font-family:'Josefin Sans',sans-serif;letter-spacing:1px}
 .msz:hover,.msz.sel{border-color:var(--rose-dark);background:var(--rose-pale);color:var(--rose-dark)}
@@ -641,6 +651,14 @@ section{scroll-margin-top:66px}
             <option value="AIRTEL">Airtel Money</option>
           </select>
         </div>
+        <div class="fg">
+          <label>Code promo (optionnel)</label>
+          <div style="display:flex;gap:8px">
+            <input type="text" id="ckPromo" placeholder="Ex: GRACE10" style="text-transform:uppercase;flex:1">
+            <button type="button" onclick="appliquerCodePromo()" style="background:var(--noir);color:#fff;border:none;padding:0 16px;border-radius:4px;font-size:11px;letter-spacing:1px;cursor:pointer;white-space:nowrap">Appliquer</button>
+          </div>
+          <p id="coPromoMsg" style="font-size:11.5px;margin-top:6px;display:none"></p>
+        </div>
         <p class="aerr" id="coErr" style="display:none;text-align:left">⚠ Erreur</p>
         <button class="btn-p" id="ckPayBtn" onclick="submitCheckout()" style="width:100%;text-align:center;margin-top:10px">✦ Payer maintenant</button>
       </div>
@@ -681,6 +699,7 @@ section{scroll-margin-top:66px}
     <button class="atab" id="tabCmd" onclick="switchAdminTab('commandes')">🧾 Commandes <span class="atab-badge" id="cmdBadge" style="display:none">0</span></button>
     <button class="atab" id="tabContenu" onclick="switchAdminTab('contenu')">🎨 Contenu du site</button>
     <button class="atab" id="tabStats" onclick="switchAdminTab('stats')">📊 Statistiques</button>
+    <button class="atab" id="tabAffil" onclick="switchAdminTab('affiliation')">🤝 Affiliation</button>
   </div>
   <div class="abo" id="paneProduits">
     <!-- Guide -->
@@ -838,6 +857,22 @@ section{scroll-margin-top:66px}
     <div class="ast" style="margin-top:44px">✦ Commandes non finalisées</div>
     <div id="statsNonFinalisees"><div style="color:rgba(255,255,255,.25);font-size:13px;padding:10px 0">Aucune.</div></div>
   </div>
+
+  <!-- PANNEAU AFFILIATION -->
+  <div class="abo" id="paneAffiliation" style="display:none">
+    <div class="ast">✦ Ajouter un(e) influenceur/partenaire</div>
+    <div class="cnt-form">
+      <div class="fg"><label>Nom</label><input type="text" id="afNom" placeholder="Ex: Grâce Malonga" oninput="suggererCodeAffilie()"></div>
+      <div class="fg"><label>Code (généré automatiquement, modifiable)</label><input type="text" id="afCode" placeholder="Ex: GRACE10" style="text-transform:uppercase"></div>
+      <div class="fg"><label>Commission (% sur chaque vente confirmée)</label><input type="number" id="afPourcentage" placeholder="Ex: 10" min="0" max="100" step="0.5"></div>
+      <div class="fg"><label>Réduction offerte au client (%, optionnel)</label><input type="number" id="afReduction" placeholder="Ex: 5" min="0" max="100" step="0.5"></div>
+      <div class="fg"><label>Date de fin du partenariat (optionnel)</label><input type="date" id="afDateFin"></div>
+      <button class="asub" onclick="ajouterAffilie()">✦ Créer le lien</button>
+    </div>
+
+    <div class="ast" style="margin-top:44px">✦ Liens actifs & performances</div>
+    <div id="affiliesList"><div style="color:rgba(255,255,255,.25);font-size:13px;padding:10px 0">Aucun partenaire pour l'instant.</div></div>
+  </div>
 </div>
 
 
@@ -925,6 +960,7 @@ let pubs = {};
 let annonce = null;
 let evenement = null;
 let contact = null;
+let affilies = {};
 let curFilter = 'tous';
 let searchTerm = '';
 let favoris = {};
@@ -936,6 +972,14 @@ let newNotifs = 0;
 // DÉMARRAGE
 // =====================================================
 window.addEventListener('load', () => {
+  // Capture d'un lien d'affiliation (?ref=CODE) : mémorisé pour la session, clic comptabilisé
+  const urlParams = new URLSearchParams(window.location.search);
+  const refParam = (urlParams.get('ref') || '').toUpperCase().replace(/[^A-Z0-9_-]/g, '');
+  if (refParam) {
+    try { localStorage.setItem('d2shop_ref', refParam); } catch (e) {}
+    db.ref(`contenu/affilies/${refParam}/clics`).transaction(cur => cur === null ? cur : (cur || 0) + 1);
+  }
+
   // Fin intro après 3.8s
   setTimeout(() => {
     const intro = document.getElementById('intro');
@@ -1015,6 +1059,10 @@ window.addEventListener('load', () => {
     contact = snap.val() || null;
     renderContact();
     renderAdminContact();
+  });
+  db.ref('contenu/affilies').on('value', snap => {
+    affilies = snap.val() || {};
+    renderAdminAffilies();
   });
 });
 
@@ -1227,6 +1275,8 @@ function selSz(el) {
 // =====================================================
 let panier = {};
 try { panier = JSON.parse(localStorage.getItem('d2shop_panier') || '{}'); } catch (e) { panier = {}; }
+let refCode = null;
+try { refCode = localStorage.getItem('d2shop_ref') || null; } catch (e) { refCode = null; }
 
 function clePanier(id, taille) {
   return `${id}::${taille || ''}`;
@@ -1412,6 +1462,8 @@ async function rechercherCommandes() {
 // COMMANDE & PAIEMENT (OpenPay)
 // =====================================================
 let checkoutPollTimer = null;
+let montantPanierBrut = 0;
+let codePromoValide = null;
 
 function ouvrirCheckoutDepuisPanier() {
   const articles = panierArticlesValides();
@@ -1425,10 +1477,14 @@ function ouvrirCheckoutDepuisPanier() {
     total += sousTotal;
     return `<div class="cis-row"><span>${a.qte} × ${a.prod.nom}${a.taille ? ' (' + a.taille + ')' : ''}</span><span>${sousTotal.toLocaleString()} FCFA</span></div>`;
   }).join('');
+  montantPanierBrut = total;
   document.getElementById('coPrix').textContent = total.toLocaleString() + ' FCFA';
 
   ['ckNom','ckPrenom','ckAdresse','ckTel'].forEach(id2 => document.getElementById(id2).value = '');
   document.getElementById('ckProvider').value = 'MTN';
+  document.getElementById('ckPromo').value = refCode || '';
+  document.getElementById('coPromoMsg').style.display = 'none';
+  codePromoValide = null;
   document.getElementById('coStep1').style.display = 'block';
   document.getElementById('coStep2').style.display = 'none';
   document.getElementById('coErr').style.display = 'none';
@@ -1436,6 +1492,46 @@ function ouvrirCheckoutDepuisPanier() {
   btn.disabled = false;
   btn.textContent = '✦ Payer maintenant';
   document.getElementById('checkout').classList.add('open');
+
+  if (refCode) appliquerCodePromo();
+}
+
+function appliquerCodePromo() {
+  const code = sanitizeCode(document.getElementById('ckPromo').value);
+  const msgEl = document.getElementById('coPromoMsg');
+  codePromoValide = null;
+
+  if (!code) {
+    document.getElementById('coPrix').textContent = montantPanierBrut.toLocaleString() + ' FCFA';
+    msgEl.style.display = 'none';
+    return;
+  }
+
+  const aff = affilies[code];
+  const maintenant = Date.now();
+  const expire = aff && aff.dateFin && aff.dateFin < maintenant;
+
+  if (!aff || aff.actif === false || expire) {
+    document.getElementById('coPrix').textContent = montantPanierBrut.toLocaleString() + ' FCFA';
+    msgEl.textContent = '⚠ Ce code n\'est plus valide.';
+    msgEl.style.color = '#e53935';
+    msgEl.style.display = 'block';
+    return;
+  }
+
+  codePromoValide = code;
+  const reduction = aff.reduction || 0;
+  const montantReduit = Math.round(montantPanierBrut * (1 - reduction / 100));
+  document.getElementById('coPrix').textContent = montantReduit.toLocaleString() + ' FCFA';
+
+  if (reduction > 0) {
+    msgEl.textContent = `✓ Code appliqué : -${reduction}% grâce à ${aff.nom}`;
+    msgEl.style.color = '#43a047';
+  } else {
+    msgEl.textContent = `✓ Code appliqué (${aff.nom})`;
+    msgEl.style.color = '#43a047';
+  }
+  msgEl.style.display = 'block';
 }
 
 function closeCheckout() {
@@ -1475,7 +1571,8 @@ async function submitCheckout() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         items: articles.map(a => ({ id: a.id, taille: a.taille, qte: a.qte })),
-        client: { nom, prenom, adresse, telephone, provider }
+        client: { nom, prenom, adresse, telephone, provider },
+        refCode: codePromoValide || null
       })
     });
     const data = await res.json();
@@ -1520,6 +1617,8 @@ function pollOrderStatus(orderId) {
         panier = {};
         sauvegarderPanier();
         renderPanier();
+        refCode = null;
+        try { localStorage.removeItem('d2shop_ref'); } catch (e) {}
         document.getElementById('coStep2').innerHTML =
           '<div class="co-ok">✓ Paiement confirmé !</div><p style="font-size:13px;color:#777;margin-top:8px">Ta commande est enregistrée. D2 Shop va préparer la livraison.</p>' +
           '<button class="btn-p" style="margin-top:20px;width:100%;text-align:center" onclick="closeCheckout()">Fermer</button>';
@@ -1901,10 +2000,12 @@ function switchAdminTab(tab) {
   document.getElementById('paneCommandes').style.display = tab === 'commandes' ? 'block' : 'none';
   document.getElementById('paneContenu').style.display = tab === 'contenu' ? 'block' : 'none';
   document.getElementById('paneStats').style.display = tab === 'stats' ? 'block' : 'none';
+  document.getElementById('paneAffiliation').style.display = tab === 'affiliation' ? 'block' : 'none';
   document.getElementById('tabProd').classList.toggle('active', tab === 'produits');
   document.getElementById('tabCmd').classList.toggle('active', tab === 'commandes');
   document.getElementById('tabContenu').classList.toggle('active', tab === 'contenu');
   document.getElementById('tabStats').classList.toggle('active', tab === 'stats');
+  document.getElementById('tabAffil').classList.toggle('active', tab === 'affiliation');
   if (tab === 'stats') {
     renderMeilleuresVentes();
     renderCommandesNonFinalisees();
@@ -2244,6 +2345,114 @@ function enregistrerContact() {
   db.ref('contenu/contact').set({ whatsapp, email, adresse, instagram, facebook })
     .then(() => showToast('✓ Contact mis à jour', 'success'))
     .catch(() => showToast('Erreur enregistrement contact', 'error'));
+}
+
+// =====================================================
+// ADMIN — AFFILIATION
+// =====================================================
+function sanitizeCode(txt) {
+  return String(txt || '').toUpperCase().replace(/[^A-Z0-9_-]/g, '').substring(0, 20);
+}
+
+function suggererCodeAffilie() {
+  const codeEl = document.getElementById('afCode');
+  if (codeEl.dataset.touched === '1') return; // ne pas écraser une modif manuelle
+  const nom = document.getElementById('afNom').value;
+  codeEl.value = sanitizeCode(nom.split(' ')[0] || '');
+}
+(() => {
+  const codeEl = document.getElementById('afCode');
+  if (codeEl) codeEl.addEventListener('input', () => codeEl.dataset.touched = '1');
+})();
+
+function ajouterAffilie() {
+  const nom = document.getElementById('afNom').value.trim();
+  const code = sanitizeCode(document.getElementById('afCode').value);
+  const pourcentage = parseFloat(document.getElementById('afPourcentage').value) || 0;
+  const reduction = parseFloat(document.getElementById('afReduction').value) || 0;
+  const dateFinVal = document.getElementById('afDateFin').value;
+  const dateFin = dateFinVal ? new Date(dateFinVal + 'T23:59:59').getTime() : null;
+
+  if (!nom || !code) {
+    showToast('Nom et code obligatoires', 'error');
+    return;
+  }
+  if (affilies[code]) {
+    showToast('Ce code existe déjà, choisis-en un autre', 'error');
+    return;
+  }
+  db.ref(`contenu/affilies/${code}`).set({
+    nom, actif: true, clics: 0, ventes: 0, ca: 0, pourcentage, reduction, dateFin, createdAt: Date.now()
+  })
+    .then(() => {
+      showToast('✓ Lien d\'affiliation créé', 'success');
+      document.getElementById('afNom').value = '';
+      document.getElementById('afPourcentage').value = '';
+      document.getElementById('afReduction').value = '';
+      document.getElementById('afDateFin').value = '';
+      const codeEl = document.getElementById('afCode');
+      codeEl.value = '';
+      codeEl.dataset.touched = '0';
+    })
+    .catch(() => showToast('Erreur création du lien', 'error'));
+}
+
+function renderAdminAffilies() {
+  const el = document.getElementById('affiliesList');
+  const items = Object.entries(affilies).sort((a, b) => (b[1].ca || 0) - (a[1].ca || 0));
+  if (!items.length) {
+    el.innerHTML = '<div style="color:rgba(255,255,255,.25);font-size:13px;padding:10px 0">Aucun partenaire pour l\'instant.</div>';
+    return;
+  }
+  const base = window.location.origin + window.location.pathname;
+  const maintenant = Date.now();
+  el.innerHTML = items.map(([code, a]) => {
+    const expire = a.dateFin && a.dateFin < maintenant;
+    const aRembourser = ((a.ca || 0) * (a.pourcentage || 0)) / 100;
+    const infos = [];
+    if (a.pourcentage) infos.push(`${a.pourcentage}% de commission`);
+    if (a.reduction) infos.push(`${a.reduction}% offert au client`);
+    if (a.dateFin) infos.push(`${expire ? '⛔ Expiré le' : 'Jusqu\'au'} ${new Date(a.dateFin).toLocaleDateString('fr-FR')}`);
+    return `
+    <div class="affil-item">
+      <div class="affil-top">
+        <div>
+          <div class="affil-nom">${a.nom}${a.actif === false ? ' — désactivé' : ''}${expire ? ' — expiré' : ''}</div>
+          <div class="affil-lien">${base}?ref=${code}</div>
+          ${infos.length ? `<div class="affil-lien" style="color:rgba(255,255,255,.4)">${infos.join(' · ')}</div>` : ''}
+        </div>
+        <div class="ci-act">
+          <button class="ci-btn" onclick="copierLienAffilie('${base}?ref=${code}')" title="Copier le lien">📋</button>
+          <button class="ci-btn" onclick="toggleAffilieActif('${code}')" title="Activer/Désactiver">${a.actif === false ? '👁' : '🙈'}</button>
+          <button class="ci-btn danger" onclick="supprimerAffilie('${code}','${a.nom.replace(/'/g, "\\'")}')" title="Supprimer">✕</button>
+        </div>
+      </div>
+      <div class="affil-stats">
+        <div class="affil-stat"><div class="as-val">${a.clics || 0}</div><div class="as-lbl">Clics</div></div>
+        <div class="affil-stat"><div class="as-val">${a.ventes || 0}</div><div class="as-lbl">Ventes</div></div>
+        <div class="affil-stat"><div class="as-val" style="color:var(--rose)">${(a.ca || 0).toLocaleString()}</div><div class="as-lbl">FCFA générés</div></div>
+        ${a.pourcentage ? `<div class="affil-stat"><div class="as-val" style="color:#81c784">${aRembourser.toLocaleString(undefined,{maximumFractionDigits:0})}</div><div class="as-lbl">À rembourser</div></div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function copierLienAffilie(lien) {
+  navigator.clipboard.writeText(lien)
+    .then(() => showToast('✓ Lien copié', 'success'))
+    .catch(() => showToast('Impossible de copier automatiquement', 'error'));
+}
+
+function toggleAffilieActif(code) {
+  const actuel = affilies[code] && affilies[code].actif !== false;
+  db.ref(`contenu/affilies/${code}/actif`).set(!actuel);
+}
+
+function supprimerAffilie(code, nom) {
+  if (!confirm(`Supprimer le lien de "${nom}" ? Les statistiques déjà générées seront perdues.`)) return;
+  db.ref(`contenu/affilies/${code}`).remove()
+    .then(() => showToast('Lien supprimé'))
+    .catch(() => showToast('Erreur suppression', 'error'));
 }
 
 // =====================================================
