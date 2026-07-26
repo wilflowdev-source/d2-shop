@@ -8,6 +8,10 @@ function nettoyerTelephone(tel) {
   return String(tel || "").replace(/\D/g, "");
 }
 
+function sanitizeCode(txt) {
+  return String(txt || "").toUpperCase().replace(/[^A-Z0-9_-]/g, "").substring(0, 20);
+}
+
 exports.handler = async (event) => {
   if (event.httpMethod !== "POST") {
     return { statusCode: 405, body: JSON.stringify({ error: "Méthode non autorisée." }) };
@@ -79,6 +83,26 @@ exports.handler = async (event) => {
       return { statusCode: 400, body: JSON.stringify({ error: "Montant de commande invalide." }) };
     }
 
+    // Code d'affiliation / promo (optionnel) : on ne l'attache que s'il correspond à un
+    // partenaire actif et non expiré. La réduction client, si définie, est appliquée ici,
+    // jamais confiée au montant envoyé par le navigateur.
+    let refCode = null;
+    let montantAvantReduction = null;
+    const codeCandidat = sanitizeCode(body.refCode);
+    if (codeCandidat) {
+      const affSnap = await db.ref(`contenu/affilies/${codeCandidat}`).once("value");
+      const aff = affSnap.val();
+      const expire = aff && aff.dateFin && aff.dateFin < Date.now();
+      if (aff && aff.actif !== false && !expire) {
+        refCode = codeCandidat;
+        const reduction = Number(aff.reduction) || 0;
+        if (reduction > 0) {
+          montantAvantReduction = montant;
+          montant = Math.round(montant * (1 - reduction / 100));
+        }
+      }
+    }
+
     // 1. Créer la commande
     const orderRef = db.ref("commandes").push();
     const orderId = orderRef.key;
@@ -86,8 +110,10 @@ exports.handler = async (event) => {
       items: itemsValides,
       client: { nom: client.nom, prenom: client.prenom, adresse: client.adresse, telephone, provider },
       montant,
+      montantAvantReduction,
       statut: "en_attente_paiement",
       createdAt: Date.now(),
+      refCode,
     });
 
     // 2. Initier le paiement OpenPay
