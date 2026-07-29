@@ -59,6 +59,17 @@ exports.handler = async (event) => {
     }
 
     // Vérifier chaque produit et son stock côté serveur (jamais confiance au client)
+    // Les promotions actives (par article) sont appliquées ici, jamais au prix envoyé par le navigateur.
+    const promosSnap = await db.ref("contenu/promotions").once("value");
+    const toutesPromos = promosSnap.val() || {};
+    const maintenant = Date.now();
+    const reductionParProduit = {};
+    Object.values(toutesPromos).forEach((p) => {
+      if (!p || !p.produitId || p.actif === false) return;
+      if (p.dateFin && p.dateFin < maintenant) return;
+      reductionParProduit[p.produitId] = Number(p.reduction) || 0;
+    });
+
     const itemsValides = [];
     let montant = 0;
 
@@ -74,9 +85,20 @@ exports.handler = async (event) => {
           body: JSON.stringify({ error: `Stock insuffisant pour "${prod.nom}" (${prod.stock || 0} disponible(s)).` }),
         };
       }
-      const prix = Number(prod.prix);
-      montant += prix * it.qte;
-      itemsValides.push({ id: it.id, nom: prod.nom, prix, taille: it.taille || null, qte: it.qte });
+      const prixCatalogue = Number(prod.prix);
+      const reductionArticle = reductionParProduit[it.id] || 0;
+      const prixUnitaire = reductionArticle > 0
+        ? Math.round(prixCatalogue * (1 - reductionArticle / 100))
+        : prixCatalogue;
+      montant += prixUnitaire * it.qte;
+      itemsValides.push({
+        id: it.id,
+        nom: prod.nom,
+        prix: prixUnitaire,
+        prixCatalogue: reductionArticle > 0 ? prixCatalogue : null,
+        taille: it.taille || null,
+        qte: it.qte,
+      });
     }
 
     if (montant <= 0) {
