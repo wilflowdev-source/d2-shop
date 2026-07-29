@@ -112,6 +112,9 @@ nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.97);backdrop-
 /* PUBS PARTENAIRES */
 #pubsList{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;max-width:1200px;margin:0 auto;padding:0 24px 70px}
 .pub-card{display:block;text-decoration:none;background:#fff;border:1px solid rgba(0,0,0,.07);border-radius:12px;padding:22px;text-align:center;transition:transform .2s,box-shadow .2s}
+.pub-card .pub-img{width:64px;height:64px;border-radius:50%;object-fit:cover;margin:0 auto 12px;display:block}
+.prix-barre{text-decoration:line-through;color:#aaa;font-size:12px;margin-right:7px;font-family:'Josefin Sans',sans-serif;font-weight:400}
+.pbg.promo-bg{background:#43a047}
 .pub-card:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(0,0,0,.08)}
 .pub-card .pub-n{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:var(--noir);margin-bottom:6px}
 .pub-card .pub-t{font-size:12.5px;color:#888}
@@ -806,19 +809,23 @@ section{scroll-margin-top:66px}
     </div>
     <div id="bannieresAdminList" style="margin-top:18px"></div>
 
-    <div class="ast" style="margin-top:44px">✦ Promotions</div>
+    <div class="ast" style="margin-top:44px">✦ Promotions (appliquées directement sur un article)</div>
     <div class="cnt-form">
-      <div class="fg"><label>Titre de la promo</label><input type="text" id="prTitre" placeholder="Ex: -20% sur les sacs"></div>
-      <div class="fg"><label>Description</label><input type="text" id="prDescription" placeholder="Ex: Jusqu'au 31 juillet"></div>
-      <button class="asub" onclick="ajouterPromo()">✦ Ajouter cette promotion</button>
+      <div class="fg"><label>Article concerné</label>
+        <select id="prProduit" style="width:100%;border:1px solid rgba(255,255,255,.15);border-radius:4px;padding:11px 14px;background:rgba(255,255,255,.04);color:#fff;font-family:'Josefin Sans',sans-serif;font-size:13px"></select>
+      </div>
+      <div class="fg"><label>Réduction (%)</label><input type="number" id="prReduction" placeholder="Ex: 20" min="1" max="90" step="1"></div>
+      <div class="fg"><label>Jusqu'au (optionnel)</label><input type="date" id="prDateFin"></div>
+      <button class="asub" onclick="ajouterPromo()">✦ Appliquer cette promotion</button>
     </div>
     <div id="promosAdminList" style="margin-top:18px"></div>
 
-    <div class="ast" style="margin-top:44px">✦ Pubs partenaires</div>
+    <div class="ast" style="margin-top:44px">✦ Pubs partenaires (rotation automatique, une pub visible à la fois)</div>
     <div class="cnt-form">
       <div class="fg"><label>Nom du partenaire</label><input type="text" id="pbNom" placeholder="Ex: Salon de coiffure Élégance"></div>
       <div class="fg"><label>Texte court</label><input type="text" id="pbTexte" placeholder="Ex: -15% pour les clientes D2 Shop"></div>
       <div class="fg"><label>Lien (site, WhatsApp, Instagram...)</label><input type="text" id="pbLien" placeholder="https://..."></div>
+      <div class="fg"><label>Image / logo (optionnel)</label><input type="file" id="pbImg" accept="image/*" onchange="prevPubImg(event)"><img id="pbImgTh" style="display:none;max-width:120px;margin-top:8px;border-radius:6px"></div>
       <button class="asub" onclick="ajouterPub()">✦ Ajouter ce partenaire</button>
     </div>
     <div id="pubsAdminList" style="margin-top:18px"></div>
@@ -1015,6 +1022,8 @@ window.addEventListener('load', () => {
     renderProds(curFilter);
     renderAdmList();
     renderPanier();
+    remplirSelectProduits();
+    renderAdminPromos();
   }, err => {
     console.error('Firebase erreur:', err);
     showToast('Erreur connexion Firebase', 'error');
@@ -1051,6 +1060,8 @@ window.addEventListener('load', () => {
     promos = snap.val() || {};
     renderPromoStrip();
     renderAdminPromos();
+    renderProds(curFilter);
+    renderPanier();
   });
   db.ref('contenu/pubs').on('value', snap => {
     pubs = snap.val() || {};
@@ -1211,12 +1222,18 @@ function renderProds(f) {
     const im = p.imgB64
       ? `<img src="${p.imgB64}" alt="${p.nom}">`
       : `<span style="font-size:62px">${p.emoji||'🛍️'}</span>`;
+    const promo = promoActifPour(id);
     const bh = ep
       ? '<span class="pbg ebg">Épuisé</span>'
+      : promo ? `<span class="pbg promo-bg">-${promo.reduction}%</span>`
       : p.badge ? `<span class="pbg">${p.badge}</span>` : '';
     const tz = p.tailles
       ? p.tailles.split(',').map(t => `<span class="sz">${t.trim()}</span>`).join('') : '';
     const isFav = !!favoris[id];
+    const prixAffiche = promo ? Math.round(p.prix * (1 - promo.reduction / 100)) : p.prix;
+    const prixHtml = promo
+      ? `<span class="prix-barre">${Number(p.prix).toLocaleString()}</span>${prixAffiche.toLocaleString()} <span class="pcu">FCFA</span>`
+      : `${Number(p.prix).toLocaleString()} <span class="pcu">FCFA</span>`;
     return `
     <div class="pc${ep?' ep':''}" onclick="${ep ? '' : `openModal('${id}')`}">
       <div class="pi">
@@ -1228,7 +1245,7 @@ function renderProds(f) {
         <div class="pd">${(p.desc||'').substring(0,85)}...</div>
         ${tz ? `<div class="pszs">${tz}</div>` : ''}
         <div class="pf">
-          <div class="pp">${Number(p.prix).toLocaleString()} <span class="pcu">FCFA</span></div>
+          <div class="pp">${prixHtml}</div>
           <span class="sl2">${sl}</span>
         </div>
         <button class="bwa" ${ep ? 'disabled' : `onclick="event.stopPropagation();ajouterAuPanier('${id}')"`}>
@@ -1263,7 +1280,13 @@ function openModal(id) {
     + `<button class="fav-btn-modal${favoris[id]?' active':''}" id="mFavBtn" data-id="${id}" onclick="event.stopPropagation();toggleFavori('${id}')">${favoris[id]?'♥':'♡'}</button>`;
   document.getElementById('mCat').textContent = {femme:'Collection Femme',homme:'Collection Homme',accessoire:'Accessoires'}[p.cat] || p.cat;
   document.getElementById('mNom').textContent = p.nom;
-  document.getElementById('mPrix').textContent = Number(p.prix).toLocaleString() + ' FCFA';
+  const promo = promoActifPour(id);
+  if (promo) {
+    const prixReduit = Math.round(p.prix * (1 - promo.reduction / 100));
+    document.getElementById('mPrix').innerHTML = `<span class="prix-barre">${Number(p.prix).toLocaleString()}</span>${prixReduit.toLocaleString()} FCFA <span style="font-size:11px;color:#43a047;font-family:'Josefin Sans',sans-serif;letter-spacing:1px">-${promo.reduction}%</span>`;
+  } else {
+    document.getElementById('mPrix').textContent = Number(p.prix).toLocaleString() + ' FCFA';
+  }
   document.getElementById('mDesc').textContent = p.desc || '';
   document.getElementById('mStock').innerHTML = p.stock <= 3
     ? `<span class="wrn">⚠ Plus que ${p.stock} en stock !</span>`
@@ -1370,14 +1393,16 @@ function renderPanier() {
 
   let total = 0;
   listEl.innerHTML = articles.map(a => {
-    const sousTotal = a.prod.prix * a.qte;
+    const promo = promoActifPour(a.id);
+    const prixUnit = promo ? Math.round(a.prod.prix * (1 - promo.reduction / 100)) : a.prod.prix;
+    const sousTotal = prixUnit * a.qte;
     total += sousTotal;
     const img = a.prod.imgB64 ? `<img src="${a.prod.imgB64}" alt="">` : (a.prod.emoji || '🛍️');
     return `
       <div class="cart-item">
         <div class="ci-img">${img}</div>
         <div class="ci-info">
-          <div class="ci-nom">${a.prod.nom}</div>
+          <div class="ci-nom">${a.prod.nom}${promo ? ` <span style="color:#43a047;font-size:10px">-${promo.reduction}%</span>` : ''}</div>
           <div class="ci-meta">${a.taille ? 'Taille : ' + a.taille : ''}</div>
           <div class="qty-ctrl">
             <button class="qty-btn" onclick="changerQte('${a.key}',-1)">−</button>
@@ -1485,9 +1510,11 @@ function ouvrirCheckoutDepuisPanier() {
 
   let total = 0;
   document.getElementById('coItemsSummary').innerHTML = articles.map(a => {
-    const sousTotal = a.prod.prix * a.qte;
+    const promo = promoActifPour(a.id);
+    const prixUnit = promo ? Math.round(a.prod.prix * (1 - promo.reduction / 100)) : a.prod.prix;
+    const sousTotal = prixUnit * a.qte;
     total += sousTotal;
-    return `<div class="cis-row"><span>${a.qte} × ${a.prod.nom}${a.taille ? ' (' + a.taille + ')' : ''}</span><span>${sousTotal.toLocaleString()} FCFA</span></div>`;
+    return `<div class="cis-row"><span>${a.qte} × ${a.prod.nom}${a.taille ? ' (' + a.taille + ')' : ''}${promo ? ` -${promo.reduction}%` : ''}</span><span>${sousTotal.toLocaleString()} FCFA</span></div>`;
   }).join('');
   montantPanierBrut = total;
   document.getElementById('coPrix').textContent = total.toLocaleString() + ' FCFA';
@@ -2110,30 +2137,46 @@ function renderAnnonce() {
 }
 
 function renderPromoStrip() {
-  const items = Object.values(promos).filter(p => p.actif !== false);
-  const section = document.getElementById('promo-section');
-  if (!items.length) { section.style.display = 'none'; return; }
-  section.style.display = 'block';
-  document.getElementById('promoStrip').innerHTML = items.map(p => `
-    <div class="promo-card">
-      <div class="pc-t">${p.titre || ''}</div>
-      <div class="pc-d">${p.description || ''}</div>
-    </div>`).join('');
+  // Les promotions s'affichent désormais directement sur les articles concernés
+  // (badge + prix barré) — cette bannière générique n'est plus utilisée.
+  document.getElementById('promo-section').style.display = 'none';
 }
 
+function promoActifPour(prodId) {
+  const now = Date.now();
+  return Object.values(promos).find(p =>
+    p.produitId === prodId && p.actif !== false && (!p.dateFin || p.dateFin >= now)
+  ) || null;
+}
+
+let pubRotationTimer = null;
 function renderPubs() {
   const items = Object.values(pubs).filter(p => p.actif !== false);
   const section = document.getElementById('pubs-section');
-  if (!items.length) { section.style.display = 'none'; return; }
+  if (!items.length) {
+    section.style.display = 'none';
+    if (pubRotationTimer) { clearInterval(pubRotationTimer); pubRotationTimer = null; }
+    return;
+  }
   section.style.display = 'block';
-  document.getElementById('pubsList').innerHTML = items.map(p => {
+
+  const afficherPubActuelle = () => {
+    // Rotation type "régie publicitaire" : une seule pub visible, qui change toutes les 10 min
+    const slot = Math.floor(Date.now() / (10 * 60 * 1000)) % items.length;
+    const p = items[slot];
     const tag = p.lien ? 'a' : 'div';
     const hrefAttr = p.lien ? `href="${p.lien}" target="_blank" rel="noopener"` : '';
-    return `<${tag} class="pub-card" ${hrefAttr}>
+    const img = p.imgB64 ? `<img class="pub-img" src="${p.imgB64}" alt="${p.nom || ''}">` : '';
+    document.getElementById('pubsList').innerHTML = `<${tag} class="pub-card" ${hrefAttr}>
+      ${img}
       <div class="pub-n">${p.nom || ''}</div>
       <div class="pub-t">${p.texte || ''}</div>
     </${tag}>`;
-  }).join('');
+  };
+
+  afficherPubActuelle();
+  if (pubRotationTimer) clearInterval(pubRotationTimer);
+  pubRotationTimer = setInterval(afficherPubActuelle, 10 * 60 * 1000);
 }
 
 function renderContact() {
@@ -2221,38 +2264,65 @@ function supprimerBanniere(id, titre) {
 }
 
 // =====================================================
-// ADMIN — CONTENU : PROMOTIONS
+// ADMIN — CONTENU : PROMOTIONS (liées à un produit)
 // =====================================================
+function remplirSelectProduits() {
+  const sel = document.getElementById('prProduit');
+  if (!sel) return;
+  const valeurActuelle = sel.value;
+  const items = Object.entries(prods);
+  sel.innerHTML = items.length
+    ? items.map(([id, p]) => `<option value="${id}">${p.nom} (${Number(p.prix).toLocaleString()} FCFA)</option>`).join('')
+    : '<option value="">Aucun article publié</option>';
+  if (items.some(([id]) => id === valeurActuelle)) sel.value = valeurActuelle;
+}
+
 function renderAdminPromos() {
   const el = document.getElementById('promosAdminList');
   const items = Object.entries(promos);
-  el.innerHTML = items.length ? items.map(([id, p]) => `
+  const maintenant = Date.now();
+  el.innerHTML = items.length ? items.map(([id, p]) => {
+    const prod = prods[p.produitId];
+    const expire = p.dateFin && p.dateFin < maintenant;
+    return `
     <div class="cnt-item">
       <div>
-        <div class="ci-t">${p.titre || ''}</div>
-        <div class="ci-d">${p.description || ''}</div>
+        <div class="ci-t">${prod ? prod.nom : '(article supprimé)'} — -${p.reduction}%${p.actif === false ? ' (désactivée)' : ''}${expire ? ' (expirée)' : ''}</div>
+        <div class="ci-d">${p.dateFin ? 'Jusqu\'au ' + new Date(p.dateFin).toLocaleDateString('fr-FR') : 'Sans date de fin'}</div>
       </div>
       <div class="ci-act">
-        <button class="ci-btn danger" onclick="supprimerPromo('${id}','${(p.titre || '').replace(/'/g, "\\'")}')" title="Supprimer">✕</button>
+        <button class="ci-btn" onclick="togglePromoActif('${id}')" title="Activer/Désactiver">${p.actif === false ? '👁' : '🙈'}</button>
+        <button class="ci-btn danger" onclick="supprimerPromo('${id}','${(prod ? prod.nom : '').replace(/'/g, "\\'")}')" title="Supprimer">✕</button>
       </div>
-    </div>`).join('') : '<div style="color:rgba(255,255,255,.25);font-size:13px;padding:10px 0">Aucune promotion active.</div>';
+    </div>`;
+  }).join('') : '<div style="color:rgba(255,255,255,.25);font-size:13px;padding:10px 0">Aucune promotion active.</div>';
 }
 
 function ajouterPromo() {
-  const titre = document.getElementById('prTitre').value.trim();
-  if (!titre) { showToast('Le titre est obligatoire', 'error'); return; }
-  const description = document.getElementById('prDescription').value.trim();
-  db.ref('contenu/promotions').push({ titre, description, actif: true })
+  const produitId = document.getElementById('prProduit').value;
+  const reduction = parseFloat(document.getElementById('prReduction').value);
+  const dateFinVal = document.getElementById('prDateFin').value;
+  const dateFin = dateFinVal ? new Date(dateFinVal + 'T23:59:59').getTime() : null;
+
+  if (!produitId) { showToast('Choisis un article', 'error'); return; }
+  if (!reduction || reduction <= 0) { showToast('Renseigne une réduction valide', 'error'); return; }
+
+  db.ref('contenu/promotions').push({ produitId, reduction, dateFin, actif: true, createdAt: Date.now() })
     .then(() => {
-      showToast('✓ Promotion ajoutée', 'success');
-      document.getElementById('prTitre').value = '';
-      document.getElementById('prDescription').value = '';
+      showToast('✓ Promotion appliquée à l\'article', 'success');
+      document.getElementById('prReduction').value = '';
+      document.getElementById('prDateFin').value = '';
     })
     .catch(() => showToast('Erreur ajout promotion', 'error'));
 }
 
+function togglePromoActif(id) {
+  const actuel = promos[id] && promos[id].actif !== false;
+  db.ref(`contenu/promotions/${id}/actif`).set(!actuel);
+}
+
 function supprimerPromo(id, titre) {
-  if (!confirm(`Supprimer la promotion "${titre}" ?`)) return;
+  if (!confirm(`Supprimer la promotion sur "${titre}" ?`)) return;
   db.ref(`contenu/promotions/${id}`).remove()
     .then(() => showToast('Promotion supprimée'))
     .catch(() => showToast('Erreur suppression', 'error'));
@@ -2266,27 +2336,87 @@ function renderAdminPubs() {
   const items = Object.entries(pubs);
   el.innerHTML = items.length ? items.map(([id, p]) => `
     <div class="cnt-item">
-      <div>
-        <div class="ci-t">${p.nom || ''}</div>
-        <div class="ci-d">${p.texte || ''}</div>
+      <div style="display:flex;gap:10px;align-items:center">
+        ${p.imgB64 ? `<img src="${p.imgB64}" style="width:34px;height:34px;border-radius:50%;object-fit:cover;flex-shrink:0">` : ''}
+        <div>
+          <div class="ci-t">${p.nom || ''}${p.actif === false ? ' (désactivé)' : ''}</div>
+          <div class="ci-d">${p.texte || ''}</div>
+        </div>
       </div>
       <div class="ci-act">
+        <button class="ci-btn" onclick="togglePubActif('${id}')" title="Activer/Désactiver">${p.actif === false ? '👁' : '🙈'}</button>
         <button class="ci-btn danger" onclick="supprimerPub('${id}','${(p.nom || '').replace(/'/g, "\\'")}')" title="Supprimer">✕</button>
       </div>
     </div>`).join('') : '<div style="color:rgba(255,255,255,.25);font-size:13px;padding:10px 0">Aucun partenaire.</div>';
 }
 
-function ajouterPub() {
+function prevPubImg(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 2 * 1024 * 1024) {
+    showToast('Image trop lourde. Maximum 2MB.', 'error');
+    e.target.value = '';
+    return;
+  }
+  const r = new FileReader();
+  r.onload = ev => {
+    const th = document.getElementById('pbImgTh');
+    th.src = ev.target.result;
+    th.style.display = 'block';
+  };
+  r.readAsDataURL(file);
+}
+
+async function ajouterPub() {
   const nom = document.getElementById('pbNom').value.trim();
   if (!nom) { showToast('Le nom est obligatoire', 'error'); return; }
   const texte = document.getElementById('pbTexte').value.trim();
   const lien = document.getElementById('pbLien').value.trim();
-  db.ref('contenu/pubs').push({ nom, texte, lien, actif: true })
+  const fileInput = document.getElementById('pbImg');
+  const file = fileInput.files[0];
+
+  let imgB64 = null;
+  if (file) {
+    try {
+      imgB64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = ev => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            let w = img.width, h = img.height;
+            if (w > 300) { h = h * 300 / w; w = 300; }
+            if (h > 300) { w = w * 300 / h; h = 300; }
+            canvas.width = w;
+            canvas.height = h;
+            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+            resolve(canvas.toDataURL('image/jpeg', 0.8));
+          };
+          img.onerror = reject;
+          img.src = ev.target.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    } catch (err) {
+      showToast('Erreur lecture image', 'error');
+      return;
+    }
+  }
+
+  db.ref('contenu/pubs').push({ nom, texte, lien, imgB64, actif: true })
     .then(() => {
       showToast('✓ Partenaire ajouté', 'success');
       ['pbNom', 'pbTexte', 'pbLien'].forEach(id => document.getElementById(id).value = '');
+      fileInput.value = '';
+      document.getElementById('pbImgTh').style.display = 'none';
     })
     .catch(() => showToast('Erreur ajout partenaire', 'error'));
+}
+
+function togglePubActif(id) {
+  const actuel = pubs[id] && pubs[id].actif !== false;
+  db.ref(`contenu/pubs/${id}/actif`).set(!actuel);
 }
 
 function supprimerPub(id, nom) {
